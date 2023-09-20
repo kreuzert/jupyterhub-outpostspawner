@@ -11,7 +11,7 @@ pypi:
   image:
     name: python:3.11-alpine3.18
   before_script:
-    - pip install twine build && sed -i -e "s/<version>/${CI_COMMIT_TAG}/g" ${CI_PROJECT_DIR}/setup.py
+    - pip install twine build && sed -i -e "s/version=\"latest\"/version=\"${CI_COMMIT_TAG}\"/g" ${CI_PROJECT_DIR}/setup.py
   script:
     - python -m build
     - twine upload -u __token__ -p ${PYPI_JUPYTERJSC_TOKEN} dist/*
