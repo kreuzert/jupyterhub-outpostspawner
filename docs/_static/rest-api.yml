@@ -1,0 +1,416 @@
+openapi: 3.0.3
+info:
+  title: JupyterHub OutpostSpawner
+  description: The REST API for JuypterHub OutpostSpawner
+  license:
+    name: BSD-3-Clause
+servers:
+  - url: /hub/api
+security:
+  - token: []
+paths:
+  /users/progress/events/{name}:
+    get:
+      summary: Get events of the current start process of the default server.
+      description: |
+        This endpoint has to be called with a token, that has the
+        `read:servers` scope, e.g. the xsrf_token in the browser of the user.
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Events and status from spawner
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        progress:
+                          type: integer
+                        failed:
+                          type: boolean
+                        ready:
+                          type: boolean
+                        message:
+                          type: string
+                        html_message:
+                          type: string
+                    description: List of events for this spawner
+                  activate:
+                    type: boolean
+                    description: Value of spawner.activate
+                  ready:
+                    type: boolean
+                    description: Value of spawner.ready
+    post:
+      summary: Send events for the current start process of the default server.
+      description: |
+        This endpoint has to be called with a token, that has the
+        `access:servers` scope, e.g. the `JUPYTERHUB_API_TOKEN` of the server.
+        
+        This endpoint can be used to send progress events to the JupyterHub
+        directly from the start process itself. This may be useful, if your
+        SpawnerClass will not have all information of the start process, but
+        the start process will have to check it by themself.
+
+        It can also be used to cancel a pending spawn process with setting
+        `failed`: `true`.
+
+        If `html_message` is used, the current timestamp (format
+        "%Y_%m_%d %H:%M:%S.%f") will be used as prefix. When the `html_message`
+        starts with `<details><summary>` the timestamp will be placed like this:
+        `<details><summary>{now}: `
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: |
+          Send progress event to JupyterHub, to show current progress to the user.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                failed:
+                  type: boolean
+                  description: |
+                    Whether the start process failed or not. If true: the start process will be cancelled.
+                  required: false
+                  default: false
+                progress:
+                  type: int
+                  description: |
+                    Percentage of progress. If it's lower than any previous event, the event will not be displayed.
+                  required: true
+                message:
+                  type: string
+                  description: |
+                    Define message shown to the user.
+                  required: false
+                  default: ""
+                html_message:
+                  type: string
+                  description: |
+                    Define message shown to the user, but you can use html code. If this is set `message` will be ignored.
+                  required: false
+              example:
+                failed: false
+                progress: 50
+                html_message: "<details><summary>Server is still starting up</summary>The last status was: PENDING</details>"
+      responses:
+        204:
+          description: Spawner is stopping or already stopped, or the event will be shown to the user.
+          content: {}
+        400:
+          description: Empty body sent.
+          content: {}
+  /users/progress/events/{name}/{server_name}:
+    get:
+      summary: Get events of the current start process of a named server.
+      description: |
+        This endpoint has to be called with a token, that has the
+        `read:servers` scope, e.g. the xsrf_token in the browser of the user.
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+        - name: server_name
+          in: path
+          description: |
+            name given to a named-server.
+
+            Note that depending on your JupyterHub infrastructure there are chracterter size limitation to `server_name`. Default spawner with K8s pod will not allow Jupyter Notebooks to be spawned with a name that contains more than 253 characters (keep in mind that the pod will be spawned with extra characters to identify the user and hub).
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Events and status from spawner
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        progress:
+                          type: integer
+                        failed:
+                          type: boolean
+                        ready:
+                          type: boolean
+                        message:
+                          type: string
+                        html_message:
+                          type: string
+                    description: List of events for this spawner
+                  activate:
+                    type: boolean
+                    description: Value of spawner.activate
+                  ready:
+                    type: boolean
+                    description: Value of spawner.ready
+    post:
+      summary: Send events for the current start process of a named server.
+      description: |
+        This endpoint has to be called with a token, that has the
+        `access:servers` scope, e.g. the `JUPYTERHUB_API_TOKEN` of the server.
+        
+        This endpoint can be used to send progress events to the JupyterHub
+        directly from the start process itself. This may be useful, if your
+        SpawnerClass will not have all information of the start process, but
+        the start process will have to check it by themself.
+
+        It can also be used to cancel a pending spawn process with setting
+        `failed`: `true`.
+
+        If `html_message` is used, the current timestamp (format
+        "%Y_%m_%d %H:%M:%S.%f") will be used as prefix. When the `html_message`
+        starts with `<details><summary>` the timestamp will be placed like this:
+        `<details><summary>{now}: `
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+        - name: server_name
+          in: path
+          description: |
+            name given to a named-server.
+
+            Note that depending on your JupyterHub infrastructure there are chracterter size limitation to `server_name`. Default spawner with K8s pod will not allow Jupyter Notebooks to be spawned with a name that contains more than 253 characters (keep in mind that the pod will be spawned with extra characters to identify the user and hub).
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: |
+          Send progress event to JupyterHub, to show current progress to the user.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                failed:
+                  type: boolean
+                  description: |
+                    Whether the start process failed or not. If true: the start process will be cancelled.
+                  required: false
+                  default: false
+                progress:
+                  type: int
+                  description: |
+                    Percentage of progress. If it's lower than any previous event, the event will not be displayed.
+                  required: true
+                message:
+                  type: string
+                  description: |
+                    Define message shown to the user.
+                  required: false
+                  default: ""
+                html_message:
+                  type: string
+                  description: |
+                    Define message shown to the user, but you can use html code. If this is set `message` will be ignored.
+                  required: false
+              example:
+                failed: false
+                progress: 50
+                html_message: "<details><summary>Server is still starting up</summary>The last status was: PENDING</details>"
+      responses:
+        204:
+          description: Spawner is stopping or already stopped, or the event will be shown to the user.
+          content: {}
+        400:
+          description: Empty body sent.
+          content: {}
+  /users/setuptunnel/{name}:
+    post:
+      summary: Start a ssh port forwarding process, to reach a remote running
+               JupyterLab via JupyterHub and create a K8s service for it.
+      description: |
+        This endpoint has to be called with a token, that has the
+        `access:servers` scope, e.g. the `JUPYTERHUB_API_TOKEN` of the server.
+        This will create a ssh port forwarding process to Spawner.ssh_node.
+        Default command used (you can reconfigure it with Spawner.ssh_custom_forward):
+        ```bash
+        ssh -f -N -n -oServerAliveInterval=15 -oStrictHostKeyChecking=accept-new -oControlMaster=auto -oControlPersist=yes -oPort=<ssh_port> -oControlPath=/tmp/control_<ssh_node> -oIdentityFile=<ssh_key> -O forward -L0.0.0.0:<random_internal_port>:<remote_svc_name>:<remote_svc_port> <ssh_user>@<ssh_node>
+        ```
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: |
+          Port forward options can be passed as a JSON body.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service:
+                  type: string
+                  description: |
+                    Where the JupyterHub Outpost will be able to reach
+                    the JupyterLab.
+                  required: true
+                ssh_port:
+                  type: int
+                  description: |
+                    Port used to create connection to the <ssh_node>
+                  required: false
+                ssh_username:
+                  type: string
+                  description: |
+                    Username used to create connection to the <ssh_node>
+                  required: false
+                ssh_key:
+                  type: string
+                  description: |
+                    Private key path used to create connection to the <ssh_node>
+                  required: false
+                ssh_node:
+                  type: string
+                  description: |
+                    Node used to create connection.
+                  required: false
+                ssh_forward_options:
+                  type: object
+                  properties:
+                    parameter-1:
+                      type: string
+                      description: |
+                        Any -o parameter of the ssh bash command
+                    required: false
+              example:
+                service: "jupyterhub-akewoqm18mdjkq911-1:8080"
+                ssh_port: 22
+                ssh_username: "jupyterhuboutpost"
+                ssh_key: "/home/jovyan/.ssh/id_rsa"
+                ssh_node: "192.168.0.1"
+                ssh_forward_options:
+                  ServerAliveInterval: "15"
+                  StrictHostKeyChecking: "accept-new"
+
+      responses:
+        204:
+          description: The ssh port forward process was started and the K8s service created.
+          content: {}
+        400:
+          description: Spawner is currently stopping, or no requestBody was sent.
+          content: {}
+  /users/setuptunnel/{name}/{server_name}:
+    post:
+      summary: Start a ssh port forwarding process, to reach a remote running
+               JupyterLab via JupyterHub and create a K8s service for it.
+      description: |
+        This endpoint has to be called with a token, that has the
+        `access:servers` scope, e.g. the `JUPYTERHUB_API_TOKEN` of the server.
+        This will create a ssh port forwarding process to Spawner.ssh_node.
+        Default command used (you can reconfigure it with Spawner.ssh_custom_forward):
+        ```bash
+        ssh -f -N -n -oServerAliveInterval=15 -oStrictHostKeyChecking=accept-new -oControlMaster=auto -oControlPersist=yes -oPort=<ssh_port> -oControlPath=/tmp/control_<ssh_node> -oIdentityFile=<ssh_key> -O forward -L0.0.0.0:<random_internal_port>:<remote_svc_name>:<remote_svc_port> <ssh_user>@<ssh_node>
+        ```
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+        - name: server_name
+          in: path
+          description: |
+            name given to a named-server.
+
+            Note that depending on your JupyterHub infrastructure there are chracterter size limitation to `server_name`. Default spawner with K8s pod will not allow Jupyter Notebooks to be spawned with a name that contains more than 253 characters (keep in mind that the pod will be spawned with extra characters to identify the user and hub).
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: |
+          Port forward options can be passed as a JSON body.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service:
+                  type: string
+                  description: |
+                    Where the JupyterHub Outpost will be able to reach
+                    the JupyterLab.
+                  required: true
+                ssh_port:
+                  type: int
+                  description: |
+                    Port used to create connection to the <ssh_node>
+                  required: false
+                ssh_username:
+                  type: string
+                  description: |
+                    Username used to create connection to the <ssh_node>
+                  required: false
+                ssh_key:
+                  type: string
+                  description: |
+                    Private key path used to create connection to the <ssh_node>
+                  required: false
+                ssh_node:
+                  type: string
+                  description: |
+                    Node used to create connection.
+                  required: false
+                ssh_forward_options:
+                  type: object
+                  properties:
+                    parameter-1:
+                      type: string
+                      description: |
+                        Any -o parameter of the ssh bash command
+                    required: false
+              example:
+                service: "jupyterhub-akewoqm18mdjkq911-1:8080"
+                ssh_port: 22
+                ssh_username: "jupyterhuboutpost"
+                ssh_key: "/home/jovyan/.ssh/id_rsa"
+                ssh_node: "192.168.0.1"
+                ssh_forward_options:
+                  ServerAliveInterval: "15"
+                  StrictHostKeyChecking: "accept-new"
+
+      responses:
+        204:
+          description: The ssh port forward process was started and the K8s service created.
+          content: {}
+        400:
+          description: Spawner is currently stopping, or no requestBody was sent.
+          content: {}
