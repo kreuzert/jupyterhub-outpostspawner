@@ -445,7 +445,7 @@
      inkscape:cx="183.43281"
      inkscape:cy="395.30856"
      inkscape:window-width="1920"
-     inkscape:window-height="1137"
+     inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -469,9 +469,9 @@
        transform="translate(47.02368,-303.872)"><tspan
          x="88.800781"
          y="335.62757"
-         id="tspan1836"><tspan
+         id="tspan3823"><tspan
            style="font-weight:bold;font-size:15.1181px;-inkscape-font-specification:'sans-serif, Bold'"
-           id="tspan1834">Browser</tspan></tspan></text>
+           id="tspan3821">Browser</tspan></tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.39732;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
        id="rect3475-5-6-3"
@@ -487,9 +487,9 @@
        transform="translate(-28.60554,-350.37208)"><tspan
          x="88.800781"
          y="463.21004"
-         id="tspan1840"><tspan
+         id="tspan3827"><tspan
            style="font-weight:bold;font-size:15.874px;-inkscape-font-specification:'sans-serif, Bold'"
-           id="tspan1838">Configurable HTTP Proxy</tspan></tspan></text>
+           id="tspan3825">Configurable HTTP Proxy</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
        d="M 171.77055,52.777873 V 93.002256"
@@ -519,7 +519,7 @@
        transform="translate(-27.57091,-118.81659)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1842">Authenticator</tspan></text>
+         id="tspan3829">Authenticator</tspan></text>
     <g
        id="g37471"
        transform="translate(-521.30338,7.582149)">
@@ -538,7 +538,7 @@
          transform="translate(490.50196,-73.618694)"><tspan
            x="88.800781"
            y="328.73127"
-           id="tspan1844">User Database</tspan></text>
+           id="tspan3831">User Database</tspan></text>
     </g>
     <rect
        style="fill:#ffdd55;fill-opacity:1;stroke:#000000;stroke-width:1.13386;stroke-miterlimit:4;stroke-dasharray:2.26772, 1.13386;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
@@ -555,7 +555,7 @@
        transform="translate(29.04612,-192.88823)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1846">/hub/</tspan></text>
+         id="tspan3833">/hub/</tspan></text>
     <text
        xml:space="preserve"
        id="text6109-9-66"
@@ -563,7 +563,7 @@
        transform="translate(-2.03969,27.526674)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1848">Hub</tspan></text>
+         id="tspan3835">Hub</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.378812;stroke-linejoin:bevel;stroke-miterlimit:2;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
        id="rect55299"
@@ -587,7 +587,7 @@
        transform="translate(149.47851,-84.036546)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1850">Kubernetes Service</tspan></text>
+         id="tspan3837">Kubernetes Service</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.568765;stop-color:#000000"
        id="rect19174"
@@ -603,7 +603,7 @@
        transform="rotate(-32.096407,222.98776,261.03067)"><tspan
          x="88.800781"
          y="327.00716"
-         id="tspan1852">4. port forwarding</tspan></text>
+         id="tspan3839">5. port forwarding</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.568765;stop-color:#000000"
        id="rect19174-4"
@@ -619,7 +619,7 @@
        transform="translate(-32.28699,327.07726)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1854">Hub Outpost</tspan></text>
+         id="tspan3841">Hub Outpost</tspan></text>
     <rect
        style="fill:#ffdd55;fill-opacity:1;stroke:#000000;stroke-width:1.13386;stroke-miterlimit:4;stroke-dasharray:2.26772, 1.13386;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
        id="rect3475-5-2"
@@ -635,7 +635,7 @@
        transform="translate(-13.38286,181.60321)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1856">FastAPI</tspan></text>
+         id="tspan3843">FastAPI</tspan></text>
     <g
        id="g79456"
        transform="translate(-352.90641,-24.744834)">
@@ -665,7 +665,7 @@
            transform="translate(753.49805,-41.291698)"><tspan
              x="88.800781"
              y="328.73127"
-             id="tspan1858">Database</tspan></text>
+             id="tspan3845">Database</tspan></text>
       </g>
     </g>
     <text
@@ -675,7 +675,7 @@
        transform="translate(-17.15593,286.18338)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1860">Spawner</tspan></text>
+         id="tspan3847">Spawner</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.340868;stroke-linejoin:bevel;stroke-miterlimit:2;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
        id="rect55299-8"
@@ -695,7 +695,7 @@
        transform="rotate(-90,131.98276,403.29093)"><tspan
          x="88.800781"
          y="327.00716"
-         id="tspan1862">1. send request</tspan></text>
+         id="tspan3849">1. send request</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.13386;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
        id="rect3475-5-253"
@@ -711,9 +711,9 @@
        transform="translate(173.82774,260.94766)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1866"><tspan
+         id="tspan3853"><tspan
            style="font-weight:bold;-inkscape-font-specification:'sans-serif, Bold'"
-           id="tspan1864">Notebook</tspan></tspan></text>
+           id="tspan3851">Notebook</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.0398px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
        d="m 146.91062,613.76155 h 20.92303 12.45419 c 11.58994,0 11.6012,0.0164 11.66601,-7.672 v -9.54043 c 0,-12.23944 -0.0219,-12.17604 10.68955,-12.17604 h 38.75298"
@@ -726,7 +726,7 @@
        transform="translate(66.2092,295.92693)"><tspan
          x="88.800781"
          y="327.00716"
-         id="tspan1868">2. Spawner.start</tspan></text>
+         id="tspan3855">2. Spawner.start</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.992026px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-2)"
        d="M 82.96415,479.91204 V 339.59196"
@@ -738,7 +738,7 @@
        transform="rotate(-90,144.06062,390.76554)"><tspan
          x="88.800781"
          y="327.00716"
-         id="tspan1870">3. send svc address</tspan></text>
+         id="tspan3857">3. send svc address</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.04953px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
        d="m 150.04181,302.05865 h 26.0078 c 17.08812,0 17.06579,-0.0447 17.06579,-19.98475 v -25.18627 c 0,-16.47995 -0.20677,-16.56271 14.14357,-16.56271 h 23.2609"
@@ -751,7 +751,7 @@
        transform="rotate(-90,123.28012,261.18839)"><tspan
          x="88.800781"
          y="327.00716"
-         id="tspan1872">6. create svc</tspan></text>
+         id="tspan3859">6. create svc</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.803537px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-8)"
        d="m 149.99447,310.89136 h 92.06317"
@@ -760,10 +760,13 @@
        xml:space="preserve"
        id="text6109-9-8-7-8-0-6"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.44882px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect6111-1-0-0-9-1-7)"
-       transform="translate(70.551629,-7.098072)"><tspan
+       transform="translate(70.551629,-7.098072)"
+       inkscape:export-filename="\\wsl$\Ubuntu-20.04\home\ubuntu\work\github\kreuzert\jupyterhub-outpostspawner\docs\_static\images\architecture-external.png"
+       inkscape:export-xdpi="700"
+       inkscape:export-ydpi="700"><tspan
          x="88.800781"
          y="327.00716"
-         id="tspan1874">5. send request</tspan></text>
+         id="tspan3861">4. send request</tspan></text>
     <g
        id="g104544"
        transform="translate(-464.16493,1.552043)">
@@ -785,7 +788,7 @@
          transform="matrix(0.53832977,0,0,0.53832977,477.19618,282.02731)"><tspan
            x="88.800781"
            y="328.73127"
-           id="tspan1876">:8080</tspan></text>
+           id="tspan3863">:8080</tspan></text>
     </g>
     <g
        id="g104544-2"
@@ -811,7 +814,7 @@
            transform="matrix(0.53832977,0,0,0.53832977,481.52077,282.07053)"><tspan
              x="88.800781"
              y="328.73127"
-             id="tspan1878">:22</tspan></text>
+             id="tspan3865">:22</tspan></text>
       </g>
     </g>
     <g
@@ -843,7 +846,7 @@
                transform="matrix(0.53832977,0,0,0.53832977,459.01991,281.51319)"><tspan
                  x="88.800781"
                  y="328.73127"
-                 id="tspan1880">:[port]</tspan></text>
+                 id="tspan3867">:[port]</tspan></text>
           </g>
         </g>
       </g>
@@ -860,7 +863,7 @@
        transform="translate(126.20384,-155.19644)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1882">/user/[name]/</tspan></text>
+         id="tspan3869">/user/[name]/</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.02793;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.02793, 3.0838;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
        d="m 297.94375,227.34651 v 96.0633 c 0,33.47517 -3.53791,29.26508 -41.1775,50.99631 l -78.13091,26.92577 c 0,0 -37.34306,11.17242 -50.28047,35.77325 0,22.62063 -2.02792,27.40135 24.54189,27.40135 l 84.26744,-1.02265 c 57.70471,0 57.53817,-2.97992 57.53817,57.89889 v 36.34577"
@@ -873,7 +876,7 @@
        transform="rotate(-19.026524,375.85321,66.674077)"><tspan
          x="88.800781"
          y="327.00716"
-         id="tspan1884">package route</tspan></text>
+         id="tspan3871">package route</tspan></text>
     <text
        xml:space="preserve"
        id="text6109-9-0-8"
@@ -881,7 +884,7 @@
        transform="translate(192.52581,64.964029)"><tspan
          x="88.800781"
          y="326.66235"
-         id="tspan1886">JHub K8s Cluster</tspan></text>
+         id="tspan3873">JHub K8s Cluster</tspan></text>
     <text
        xml:space="preserve"
        id="text6109-9-0-8-1"
@@ -889,7 +892,7 @@
        transform="translate(180.06223,374.10322)"><tspan
          x="88.800781"
          y="326.66235"
-         id="tspan1888">Remote K8s Cluster</tspan></text>
+         id="tspan3875">Remote K8s Cluster</tspan></text>
     <text
        xml:space="preserve"
        id="text6109-9-3"
@@ -897,7 +900,7 @@
        transform="translate(-36.60636,-14.410848)"><tspan
          x="88.800781"
          y="328.73127"
-         id="tspan1890">OutpostSpawner</tspan></text>
+         id="tspan3877">OutpostSpawner</tspan></text>
     <g
        id="g7107"
        transform="translate(3.2791061)">
@@ -918,15 +921,15 @@
          y="0"><tspan
            x="98.787669"
            y="328.73127"
-           id="tspan1894"><tspan
+           id="tspan3881"><tspan
              style="text-align:center;text-anchor:middle"
-             id="tspan1892">Port Forward
+             id="tspan3879">Port Forward
 </tspan></tspan><tspan
            x="124.82271"
            y="342.90452"
-           id="tspan1898"><tspan
+           id="tspan3885"><tspan
              style="text-align:center;text-anchor:middle"
-             id="tspan1896">Pod</tspan></tspan></text>
+             id="tspan3883">Pod</tspan></tspan></text>
     </g>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.02273px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
