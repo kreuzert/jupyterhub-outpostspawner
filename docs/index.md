@@ -38,6 +38,7 @@ The JupyterHub Outpost must fulfill the requirements of the configured Spawner c
     :caption: General
 
     architecture
+    usage
 ```
 
 ```{eval-rst}
