@@ -240,7 +240,7 @@ cat <<EOF >> outpost_remote_values_ingress.yaml
 cryptSecret: outpost-cryptkey
 outpostUsers: outpost-users
 sshPublicKeys:
-  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAI81YC6vb0G/fvMY0S61nLGSCmn/wwPdEC3FVBypHTj ubuntu@zam943
+  - $(cat jupyterhub-sshkey.pub)
 servicessh:
   type: LoadBalancer
   loadBalancerIP: ${FLOATING_IP_SSH}
