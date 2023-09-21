@@ -1,12 +1,5 @@
 # Usage
 
-```{css, echo=FALSE}
-pre {
-  max-height: 300px;
-  overflow-y: auto;
-}
-```
-
 This section contains example configurations and instructions, to use [zero2jupyterhub](https://z2jh.jupyter.org) with the OutpostSpawner and two [JupyterHub Outposts](https://artifacthub.io/packages/helm/jupyterhub-outpost/jupyterhub-outpost). We will use two Kubernetes clusters: "local" (JupyterHub and Outpost will be installed) and "remote" (only Outpost will be installed). For JupyterHub the namespace `jupyter` is used. For Outpost the namespace `outpost` is used.
 
 ```{admonition} Warning
