@@ -1052,6 +1052,7 @@ class OutpostSpawner(Spawner):
         """Run the custom_create_port_forward if defined, otherwise run the default one"""
         ssh_enabled = self.get_ssh_enabled()
         if ssh_enabled:
+            self.port = random_port()
             try:
                 if self.ssh_custom_forward:
                     port_forward = self.ssh_custom_forward(self, self.port_forward_info)
@@ -1336,10 +1337,6 @@ class OutpostSpawner(Spawner):
         self.dns_name = self.dns_name_template.format(
             namespace=self.namespace, name=self.pod_name
         )
-        ssh_enabled = self.get_ssh_enabled()
-        if ssh_enabled:
-            self.port = random_port()
-            self.local_address = "0.0.0.0"
 
     public_api_url = Unicode(
         help="""
