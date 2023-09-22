@@ -397,7 +397,7 @@ class OutpostSpawner(Spawner):
 
     ssh_enabled = Union(
         [Callable(), Bool()],
-        default_value=False,
+        default_value=True,
         help="""
         An optional hook function, or boolean, that you can implement to
         decide whether a ssh port forwarding process should be run after

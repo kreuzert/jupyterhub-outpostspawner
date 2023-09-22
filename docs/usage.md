@@ -120,11 +120,11 @@ hub:
       allow_named_servers: true
       default_url: /hub/home
   extraVolumes:
-  - name: jupyterhubOutpostSSHKey
+  - name: jupyterhub-outpost-sshkey
     secret:
       secretName: jupyterhub-outpost-sshkey
   extraVolumeMounts:
-  - name: jupyterhubOutpostSSHKey
+  - name: jupyterhub-outpost-sshkey
     mountPath: /mnt/ssh_keys
   extraEnv:
   - name: AUTH_OUTPOST_LOCAL
