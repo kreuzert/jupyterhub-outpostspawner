@@ -50,3 +50,12 @@ The JupyterHub Outpost must fulfill the requirements of the configured Spawner c
     spawners/eventoutpostspawner
     apiendpoints
 ```
+
+```{eval-rst}
+.. toctree::
+    :maxdepth: 2
+    :caption: Outpost
+
+    outpost/installation
+    outpost/configuration
+```
