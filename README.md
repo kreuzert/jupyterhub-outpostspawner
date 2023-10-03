@@ -4,15 +4,19 @@
 
 # OutpostSpawner
 
-The OutpostSpawner enables JupyterHub to spawn single-user notebook servers on multiple remote resources.
+The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub/) enables JupyterHub to spawn single-user notebook servers on multiple remote resources.
+
+## Documentation
+
+Link to [documentation](https://jupyterhub-outpostspawner.readthedocs.io).
 
 ## Overview  
   
-The JupyterHub community created many useful [JupyterHub Spawner](https://jupyterhub.readthedocs.io/en/latest/reference/spawners.html#examples) over the past years, to allow JupyterHub to use the specific resources of different systems. For most of these Spawners JupyterHub has to run at the system itself. The OutpostSpawner enables the use of these Spawners on remote systems.  
+The JupyterHub community created many useful [JupyterHub Spawner](https://jupyterhub.readthedocs.io/en/latest/reference/spawners.html#examples) over the past years, to allow JupyterHub to use the specific resources of different systems. For most of these Spawners JupyterHub has to run at the system itself. The OutpostSpawner enables the use of these Spawners on remote systems.
 
-Other Spawners like [SSHSpawner](https://github.com/NERSC/sshspawner) can spawn single-user servers on remote systems, but are not able to use system-specific features like [KubeSpawner](https://github.com/jupyterhub/kubespawner) or [BatchSpawner](https://github.com/jupyterhub/batchspawner).  
-  
-With the OutpostSpawner a single JupyterHub can offer multiple remote systems of different types. It comes with an additional REST API called "JupyterHub Outpost". This JupyterHub Outpost can use any JupyterHub Spawner and will manage the lifecycle of the single-user servers.  
+Other Spawners like [SSHSpawner](https://github.com/NERSC/sshspawner) can spawn single-user servers on remote systems, but are not able to use system-specific features like [KubeSpawner](https://github.com/jupyterhub/kubespawner) or [BatchSpawner](https://github.com/jupyterhub/batchspawner).
+
+The JupyterHub Outpost service in combination with the OutpostSpawner enables a single JupyterHub to offer multiple remote systems of different types.  
   
 - Use one JupyterHub to offer single-user servers on multiple systems.
 - Each system may use a different JupyterHub Spawner.
