@@ -2,7 +2,7 @@
 
 # OutpostSpawner
 
-The OutpostSpawner enables JupyterHub to spawn single-user notebook servers on multiple remote resources.
+The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub/) enables JupyterHub to spawn single-user notebook servers on multiple remote resources.  
 
 ## Overview  
   
@@ -10,7 +10,7 @@ The JupyterHub community created many useful [JupyterHub Spawner](https://jupyte
 
 Other Spawners like [SSHSpawner](https://github.com/NERSC/sshspawner) can spawn single-user servers on remote systems, but are not able to use system-specific features like [KubeSpawner](https://github.com/jupyterhub/kubespawner) or [BatchSpawner](https://github.com/jupyterhub/batchspawner).  
   
-With the OutpostSpawner a single JupyterHub can offer multiple remote systems of different types. It comes with an additional REST API called "JupyterHub Outpost". This JupyterHub Outpost can use any JupyterHub Spawner and will manage the lifecycle of the single-user servers.  
+The JupyterHub Outpost service in combination with the OutpostSpawner enables a single JupyterHub to offer multiple remote systems of different types.
   
 - Use one JupyterHub to offer single-user servers on multiple systems.
 - Each system may use a different JupyterHub Spawner.
@@ -38,7 +38,14 @@ The JupyterHub Outpost must fulfill the requirements of the configured Spawner c
     :caption: General
 
     architecture
-    usage
+```
+
+```{eval-rst}
+.. toctree::
+    :maxdepth: 2
+    :caption: Usage
+
+    usage/installation
 ```
 
 ```{eval-rst}
@@ -49,13 +56,4 @@ The JupyterHub Outpost must fulfill the requirements of the configured Spawner c
     spawners/outpostspawner
     spawners/eventoutpostspawner
     apiendpoints
-```
-
-```{eval-rst}
-.. toctree::
-    :maxdepth: 2
-    :caption: Outpost
-
-    outpost/installation
-    outpost/configuration
 ```

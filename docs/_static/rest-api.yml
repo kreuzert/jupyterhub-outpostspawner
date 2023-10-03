@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: JupyterHub OutpostSpawner
-  description: The REST API for JuypterHub OutpostSpawner
+  description: The REST API for JupyterHub OutpostSpawner
   license:
     name: BSD-3-Clause
 servers:
