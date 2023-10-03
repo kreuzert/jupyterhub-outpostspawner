@@ -2,7 +2,7 @@
 
 # OutpostSpawner
 
-The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub/) enables JupyterHub to spawn single-user notebook servers on multiple remote resources.  
+The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub-outpost) enables JupyterHub to spawn single-user notebook servers on multiple remote resources.  
 
 ## Overview  
   
