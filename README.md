@@ -1,10 +1,9 @@
 
 [![Documentation Status](https://readthedocs.org/projects/jupyterhub-outpostspawner/badge/?version=latest)](https://jupyterhub-outpostspawner.readthedocs.io/en/latest/?badge=latest)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jupyterhub-outpost)](https://artifacthub.io/packages/search?repo=jupyterhub-outpost)
 
 # OutpostSpawner
 
-The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub/) enables JupyterHub to spawn single-user notebook servers on multiple remote resources.
+The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub-outpost) enables JupyterHub to spawn single-user notebook servers on multiple remote resources.
 
 ## Documentation
 
