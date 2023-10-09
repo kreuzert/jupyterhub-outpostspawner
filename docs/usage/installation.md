@@ -135,7 +135,7 @@ hub:
       c.OutpostSpawner.public_api_url = "https://myjupyterhub.com/hub/api"
       c.OutpostSpawner.ssh_key = "/mnt/ssh_keys/ssh-privatekey"
       helm_release_name = os.environ.get("HELM_RELEASE_NAME")
-      c.OutpostSpawner.pod_name_template = f"{helm_release_name}-{{servername}}-{{userid}}"
+      c.OutpostSpawner.svc_name_template = f"{helm_release_name}-{{servername}}-{{userid}}"
 ingress:
   annotations:
     acme.cert-manager.io/http01-edit-in-place: "false"
