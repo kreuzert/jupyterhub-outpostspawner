@@ -40,7 +40,7 @@ With these secrets created, we can now start JupyterHub. In this scenario, we're
 
 ```{admonition} Warning
 We're connecting this JupyterHub with two JupyterHub Outposts. One is running on the same cluster as JupyterHub, the second one is running remotely on a different cluster.  
-Therefore, we're using an internal cluster address for the first Outpost. Furthermore, there's no need to enable ssh port-forwarding for the first cluster, as the JupyterLabs will be directly reachable for JupyterHub thanks to Kubernetes' internal DNS name resolution.  
+Therefore, we're using an internal cluster address for the first Outpost. Furthermore, there is no need to enable ssh port-forwarding for the first cluster, as the JupyterLabs will be directly reachable for JupyterHub thanks to Kubernetes' internal DNS name resolution.  
   
 All JupyterLabs will be using the external DNS alias name of the JupyterHub to reach the hub api url (see `c.OutpostSpawner.public_api_url`). You might have to install a hairpin-proxy (e.g. [this](https://github.com/compumike/hairpin-proxy)) to allow pods within your cluster to communicate with the public DNS alias name.
 ```
