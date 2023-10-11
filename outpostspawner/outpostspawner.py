@@ -166,7 +166,7 @@ class OutpostSpawner(Spawner):
             extra_labels = await self.get_extra_labels()
             custom_misc.update({
               "dns_name_template": self.dns_name_template,
-              "pod_name_template": self.pod_name_template,
+              "pod_name_template": self.svc_name_template,
               "internal_ssl": self.interal_ssl,
               "port": self.port,
               "services_enabled": True,
@@ -584,7 +584,7 @@ class OutpostSpawner(Spawner):
 
             def ssh_custom_svc(spawner, port_forward_info):
                 ...
-                return spawner.pod_name, spawner.port
+                return spawner.svc_name, spawner.port
 
             c.OutpostSpawner.ssh_custom_svc = ssh_custom_svc
 
@@ -600,7 +600,7 @@ class OutpostSpawner(Spawner):
 
             def ssh_custom_svc_remove(spawner, port_forward_info):
                 ...
-                return spawner.pod_name, spawner.port
+                return spawner.svc_name, spawner.port
 
             c.OutpostSpawner.ssh_custom_svc_remove = ssh_custom_svc_remove
 
@@ -821,7 +821,7 @@ class OutpostSpawner(Spawner):
 
         if not self.custom_misc_disable_default:
             custom_misc["dns_name_template"] = self.dns_name_template
-            custom_misc["pod_name_template"] = self.pod_name_template
+            custom_misc["pod_name_template"] = self.svc_name_template
             custom_misc["internal_ssl"] = self.internal_ssl
             custom_misc["port"] = self.port
             custom_misc["services_enabled"] = True
@@ -1260,7 +1260,7 @@ class OutpostSpawner(Spawner):
         Removes existing services with the same name, to create a new one.
 
         Returns:
-          (string, int): (self.pod_name, self.port)
+          (string, int): (self.svc_name, self.port)
         """
         labels = {"app": get_name("fullname"), "component": "singleuser-server"}
         extra_labels = await self.get_extra_labels()
@@ -1271,7 +1271,7 @@ class OutpostSpawner(Spawner):
             "kind": "Service",
             "metadata": {
                 "labels": labels,
-                "name": self.pod_name,
+                "name": self.svc_name,
                 "resourceversion": "v1",
             },
             "spec": {
@@ -1294,24 +1294,24 @@ class OutpostSpawner(Spawner):
             status_code = getattr(e, "status", 500)
             if status_code == 409:
                 v1.delete_namespaced_service(
-                    name=self.pod_name, namespace=self.namespace
+                    name=self.svc_name, namespace=self.namespace
                 )
                 v1.create_namespaced_service(
                     body=service_manifest, namespace=self.namespace
                 )
             else:
                 raise e
-        return self.pod_name, self.port
+        return self.svc_name, self.port
 
     async def ssh_default_svc_remove(self):
         """Remove Kubernetes Service
-        Used parameters: self.pod_name and self.namespace
+        Used parameters: self.svc_name and self.namespace
 
         Returns:
           None
         """
         v1 = self._k8s_get_client_core()
-        name = self.pod_name
+        name = self.svc_name
         v1.delete_namespaced_service(name=name, namespace=self.namespace)
 
     async def run_ssh_forward_remove(self):
@@ -1342,9 +1342,9 @@ class OutpostSpawner(Spawner):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._start_future = None
-        self.pod_name = self._expand_user_properties(self.pod_name_template)
+        self.svc_name = self._expand_user_properties(self.svc_name_template)
         self.dns_name = self.dns_name_template.format(
-            namespace=self.namespace, name=self.pod_name
+            namespace=self.namespace, name=self.svc_name
         )
 
     public_api_url = Unicode(
@@ -1373,7 +1373,7 @@ class OutpostSpawner(Spawner):
         """,
     )
 
-    pod_name_template = Unicode(
+    svc_name_template = Unicode(
         "jupyter-{username}--{servername}",
         config=True,
         help="""
@@ -1570,7 +1570,7 @@ class OutpostSpawner(Spawner):
                 # Wait for service at default address. The singleuser server itself
                 # has to call the SetupTunnel API with it's actual location.
                 # This will trigger the delayed port forwarding.
-                ret = f"{proto}{self.pod_name}:{self.port}"
+                ret = f"{proto}{self.svc_name}:{self.port}"
             else:
                 # Case 1: No port forward required, just connect to given service_address
                 service_address, port = self.split_service_address(
