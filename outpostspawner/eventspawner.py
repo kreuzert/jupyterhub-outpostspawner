@@ -20,9 +20,8 @@ from .outpostspawner import OutpostSpawner
 
 class EventOutpostSpawner(OutpostSpawner):
     """
-    A JupyterHub OutpostSpawner that focusses on receiving and showing events
-    sent by a JupyterHub outpost service or the singleuser server itself
-    a JupyterHub outpost service.
+    A JupyterHub OutpostSpawner that focuses on receiving and showing events
+    sent by a JupyterHub outpost service or the singleuser server itself.
     """
 
     # Keep track if an event with failed=False was yielded
@@ -124,9 +123,9 @@ class EventOutpostSpawner(OutpostSpawner):
         allow_none=True,
         default_value=None,
         help="""
-        Different JupyterHub outpost services may send different events.
+        Different JupyterHub Outpost services may send different events.
         This filter allows you to unify all events. Should always return a dict.
-        If the dict should not be shown return an empty dict.
+        If the dict should not be shown, return an empty dict.
                 
         Example::
 
@@ -167,7 +166,7 @@ class EventOutpostSpawner(OutpostSpawner):
             "html_message": "JupyterLab is cancelling the start.",
         },
         help="""
-        Event shown when singleuser server was cancelled.
+        Event shown when a singleuser server was cancelled.
         Can be a function or a dict.
         
         This may be a coroutine.
