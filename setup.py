@@ -19,7 +19,7 @@ def get_data_files():
 
 setup(
     name="jupyterhub-outpostspawner",
-    version="0.0.2",
+    version="0.0.4.dev1",
     description="JupyterHub Spawner to run services on multiple remote resources.",
     url="https://github.com/kreuzert/jupyterhub-outpostspawner",
     author="Tim Kreuzer",
