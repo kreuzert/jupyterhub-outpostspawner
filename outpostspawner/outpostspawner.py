@@ -36,8 +36,8 @@ from traitlets import Union
 
 class OutpostSpawner(ForwardBaseSpawner):
     """
-    A JupyterHub spawner that spawn services on remote locations in combination with
-    a JupyterHub outpost service.
+    A JupyterHub spawner that spawns services on remote locations in combination with
+    a JupyterHub Outpost service.
     """
 
     @property
@@ -53,10 +53,10 @@ class OutpostSpawner(ForwardBaseSpawner):
 
     custom_internal_ssl = Any(
         help="""
-        An optional hook function that you can implement do override the internal_ssl
+        An optional hook function you can implement do override the internal_ssl
         value for a spawner. Return value must be boolean.
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
         
@@ -69,11 +69,11 @@ class OutpostSpawner(ForwardBaseSpawner):
 
     check_allowed = Any(
         help="""
-        An optional hook function that you can implement do double check if the
+        An optional hook function you can implement to double check if the
         given user_options allow a start. If the start is not allowed, it should
         raise an exception.
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
             
@@ -89,9 +89,9 @@ class OutpostSpawner(ForwardBaseSpawner):
         [Dict(default_value={}), Callable()],
         help="""
         An optional hook function, or dict, that you can implement to add
-        extra environment variables send to the JupyterHub outpost service.
+        extra environment variables to send to the JupyterHub Outpost service.
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
         
@@ -111,9 +111,9 @@ class OutpostSpawner(ForwardBaseSpawner):
         [Dict(default_value={}), Callable()],
         help="""
         An optional hook function, or dict, that you can implement to add
-        extra user_options send to the JupyterHub outpost service.
+        extra user_options to send to the JupyterHub Outpost service.
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
         
@@ -128,9 +128,9 @@ class OutpostSpawner(ForwardBaseSpawner):
     custom_misc_disable_default = Bool(
         default_value=False,
         help="""
-        By default these `misc` options will be send to the Outpost service,
-        to override the remotely configured Spawner options. You can disable
-        this behaviour by setting this value to true.
+        By default, these `misc` options will be send to the Outpost service
+        to override the corresponding values of the Spawner configured at the 
+        Outpost. You can disable this behaviour by setting this value to true.
         
         Default `custom_misc` options::
 
@@ -150,12 +150,12 @@ class OutpostSpawner(ForwardBaseSpawner):
         [Dict(default_value={}), Callable()],
         help="""
         An optional hook function, or dict, that you can implement to add
-        extra configuration send to the JupyterHub outpost service.
-        This will override the Spawner configuration at the outpost.
+        extra configurations to send to the JupyterHub Outpost service.
+        This will override the Spawner configuration set at the Outpost.
         `key` can be anything you would normally use in your Spawner configuration:
         `c.OutpostSpawner.<key> = <value>`
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
         
@@ -165,6 +165,13 @@ class OutpostSpawner(ForwardBaseSpawner):
                 }
             
             c.OutpostSpawner.custom_misc = custom_misc
+
+        will override the image configured at the Outpost::
+
+            c.JupyterHubOutpost.spawner_class = KubeSpawner
+            c.KubeSpawner.image = "default_image:1.0"
+
+        and spawn a JupyterLab using the `jupyter/base-notebook:latest` image.
         """,
     ).tag(config=True)
 
@@ -173,7 +180,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         default_value={},
         help="""
         An optional hook function, or dict, that you can implement to define
-        keyword arguments for all requests send to the JupyterHub outpost service.
+        keyword arguments for all requests sent to the JupyterHub Outpost service.
         They are directly forwarded to the tornado.httpclient.HTTPRequest object.
                 
         Example::
@@ -215,7 +222,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         help="""
         An optional hook function, or dict, that you can implement to define
         the poll interval (in seconds). This allows you to have to different intervals
-        for different outpost services. You can use this to randomize the poll interval
+        for different Outpost services. You can use this to randomize the poll interval
         for each spawner object. 
         
         Example::
@@ -239,11 +246,11 @@ class OutpostSpawner(ForwardBaseSpawner):
 
     failed_spawn_request_hook = Any(
         help="""
-        An optional hook function that you can implement to handle a failed
-        start attempt properly. This will be called, if the POST request
-        to the outpost service was not successful.
+        An optional hook function you can implement to handle a failed
+        start attempt properly. This will be called if the POST request
+        to the Outpost service was not successful.
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
 
@@ -257,11 +264,11 @@ class OutpostSpawner(ForwardBaseSpawner):
 
     post_spawn_request_hook = Any(
         help="""
-        An optional hook function that you can implement to handle a successful
-        start attempt properly. This will be called, if the POST request
-        to the outpost service was successful.
+        An optional hook function you can implement to handle a successful
+        start attempt properly. This will be called if the POST request
+        to the Outpost service was successful.
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
         
@@ -276,23 +283,23 @@ class OutpostSpawner(ForwardBaseSpawner):
     request_404_poll_keep_running = Bool(
         default_value=False,
         help="""        
-        How to handle a 404 response from outpost API during singleuser poll request.
+        How to handle a 404 response from Outpost API during a singleuser poll request.
         """,
     ).tag(config=True)
 
     request_failed_poll_keep_running = Bool(
         default_value=True,
         help="""
-        How to handle a failed request to outpost API during singleuser poll request.
+        How to handle a failed request to Outpost API during a singleuser poll request.
         """,
     ).tag(config=True)
 
     request_url = Union(
         [Unicode(), Callable()],
         help="""
-        The URL used to communicate with the JupyterHub outpost service. 
+        The URL used to communicate with the JupyterHub Outpost service. 
         
-        This maybe a coroutine.
+        This may be a coroutine.
         
         Example::
 
@@ -310,7 +317,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         [Dict(), Callable()],
         help="""
         An optional hook function, or dict, that you can implement to define
-        the header userd for all requests send to the JupyterHub outpost service.
+        the header used for all requests sent to the JupyterHub Outpost service.
         They are forwarded directly to the tornado.httpclient.HTTPRequest object.
                 
         Example::
@@ -471,7 +478,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         """Get request url
 
         Returns:
-          request_url (string): Used to communicate with outpost service
+          request_url (string): Used to communicate with Outpost service
         """
         if callable(self.request_url):
             request_url = await maybe_future(self.request_url(self))
@@ -486,7 +493,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         """Get request headers
 
         Returns:
-          request_headers (dict): Used in communication with outpost service
+          request_headers (dict): Used in communication with Outpost service
 
         """
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -500,7 +507,7 @@ class OutpostSpawner(ForwardBaseSpawner):
     async def run_check_allowed(self):
         """Run allowed check.
 
-        May raise an exception, if start is not allowed.
+        May raise an exception if start is not allowed.
         """
         if callable(self.check_allowed):
             await maybe_future(self.check_allowed(self))
@@ -509,7 +516,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         """Get customized environment variables
 
         Returns:
-          env (dict): Used in communication with outpost service.
+          env (dict): Used in communication with Outpost service.
         """
         env = self.get_env()
 
@@ -532,7 +539,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         """Get customized user_options
 
         Returns:
-          user_options (dict): Used in communication with outpost service.
+          user_options (dict): Used in communication with Outpost service.
 
         """
         user_options = self.user_options
@@ -549,7 +556,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         """Get customized outpost configuration
 
         Returns:
-          custom_misc (dict): Used in communication with outpost service
+          custom_misc (dict): Used in communication with Outpost service
                               to override configuration in remote spawner.
 
         """
@@ -591,7 +598,7 @@ class OutpostSpawner(ForwardBaseSpawner):
     async def fetch(self, req, action):
         """Wrapper for tornado.httpclient.AsyncHTTPClient.fetch
 
-        Handles exceptions and responsens of the outpost service.
+        Handles exceptions and responsens of the Outpost service.
 
         Returns:
           dict or None
@@ -670,7 +677,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         finally:
             toc = str(time.monotonic() - tic)
             self.log.info(
-                f"Communicated {action} with outpost service ( {req.url} ) (request duration: {toc})",
+                f"Communicated {action} with Outpost service ( {req.url} ) (request duration: {toc})",
                 extra={
                     "uuidcode": self.name,
                     "log_name": self._log_name,
@@ -761,7 +768,42 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         await maybe_future(self.run_post_spawn_request_hook(resp_json))
 
-        return ""
+        """
+        There are 3 possible scenarios for remote singleuser servers:
+        1. Reachable by JupyterHub (e.g. Outpost service running on same cluster)
+        2. Port forwarding required, and we know the service_address (e.g. Outpost service running on remote cluster)
+        3. Port forwarding required, but we don't know the service_address yet (e.g. start on a batch system)
+        """
+        ssh_enabled = self.get_ssh_enabled()
+        if ssh_enabled:
+            # Case 2: Create port forwarding to service_address given by Outpost service.
+
+            # Store port_forward_info, required for port forward removal
+            self.port_forward_info = resp_json
+            local_bind_address, port = await maybe_future(self.run_ssh_forward())
+            service_address = local_bind_address.removeprefix("http://").removeprefix(
+                "https://"
+            )
+            ret = f"{proto}{service_address}:{port}"
+        else:
+            if not resp_json.get("service", ""):
+                # Case 3: service_address not known yet.
+                # Wait for service at default address. The singleuser server itself
+                # has to call the SetupTunnel API with it's actual location.
+                # This will trigger the delayed port forwarding.
+                ret = f"{proto}{self.svc_name}:{self.port}"
+            else:
+                # Case 1: No port forward required, just connect to given service_address
+                service_address, port = self.split_service_address(
+                    resp_json.get("service")
+                )
+                ret = f"{proto}{service_address}:{port}"
+
+        # Port may have changed in port forwarding or by remote Outpost service.
+        self.port = int(port)
+
+        self.log.info(f"Expect JupyterLab at {ret}")
+        return ret
 
     async def _poll(self):
         url = await self.get_request_url(attach_name=True)
