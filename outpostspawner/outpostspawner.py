@@ -88,7 +88,7 @@ class OutpostSpawner(ForwardBaseSpawner):
     custom_env = Union(
         [Dict(default_value={}), Callable()],
         help="""
-        An optional hook function, or dict, that you can implement to add
+        An optional hook function, or dict, you can implement to add
         extra environment variables to send to the JupyterHub Outpost service.
         
         This may be a coroutine.
@@ -110,7 +110,7 @@ class OutpostSpawner(ForwardBaseSpawner):
     custom_user_options = Union(
         [Dict(default_value={}), Callable()],
         help="""
-        An optional hook function, or dict, that you can implement to add
+        An optional hook function, or dict, you can implement to add
         extra user_options to send to the JupyterHub Outpost service.
         
         This may be a coroutine.
@@ -149,7 +149,7 @@ class OutpostSpawner(ForwardBaseSpawner):
     custom_misc = Union(
         [Dict(default_value={}), Callable()],
         help="""
-        An optional hook function, or dict, that you can implement to add
+        An optional hook function, or dict, you can implement to add
         extra configurations to send to the JupyterHub Outpost service.
         This will override the Spawner configuration set at the Outpost.
         `key` can be anything you would normally use in your Spawner configuration:
@@ -179,7 +179,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         [Dict(), Callable()],
         default_value={},
         help="""
-        An optional hook function, or dict, that you can implement to define
+        An optional hook function, or dict, you can implement to define
         keyword arguments for all requests sent to the JupyterHub Outpost service.
         They are directly forwarded to the tornado.httpclient.HTTPRequest object.
                 
@@ -201,7 +201,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         [Integer(), Callable()],
         default_value=8080,
         help="""
-        An optional hook function, or dict, that you can implement to define
+        An optional hook function, or dict, you can implement to define
         a port depending on the spawner object.
         
         Example::
@@ -220,7 +220,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         [Integer(), Callable()],
         default_value=0,
         help="""
-        An optional hook function, or dict, that you can implement to define
+        An optional hook function, or dict, you can implement to define
         the poll interval (in seconds). This allows you to have to different intervals
         for different Outpost services. You can use this to randomize the poll interval
         for each spawner object. 
@@ -316,7 +316,7 @@ class OutpostSpawner(ForwardBaseSpawner):
     request_headers = Union(
         [Dict(), Callable()],
         help="""
-        An optional hook function, or dict, that you can implement to define
+        An optional hook function, or dict, you can implement to define
         the header used for all requests sent to the JupyterHub Outpost service.
         They are forwarded directly to the tornado.httpclient.HTTPRequest object.
                 
@@ -389,7 +389,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         ret = super().run_pre_spawn_hook()
 
         now = datetime.now().strftime("%Y_%m_%d %H:%M:%S.%f")[:-3]
-        start_pre_msg = "Sending request to outpost service to start your service."
+        start_pre_msg = "Sending request to Outpost service to start your service."
         start_event = {
             "failed": False,
             "progress": 10,
