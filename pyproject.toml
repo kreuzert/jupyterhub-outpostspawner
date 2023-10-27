@@ -45,7 +45,7 @@ profile = "black"
 github_url = "https://github.com/kreuzert/jupyterhub-outpostspawner"
 
 [tool.tbump.version]
-current = "0.0.4.dev4"
+current = "0.0.4.dev5"
 regex = '''
   (?P<major>\d+)
   \.
