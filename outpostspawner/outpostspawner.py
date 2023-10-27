@@ -46,7 +46,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         Returns self.custom_internal_ssl result if defined, user.settings.get('internal_ssl', False) otherwise
         """
         if self.custom_internal_ssl:
-            ret = self.custom_internal_ssl(self)
+            ret = self.custom_internal_ssl(self, self.user_options)
         else:
             ret = self.user.settings.get("internal_ssl", False)
         return ret
@@ -60,7 +60,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         
         Example::
         
-            def custom_internal_ssl(spawner):
+            def custom_internal_ssl(spawner, user_options):
                 return spawner.name.startswith("ssl-")
         
             c.OutpostSpawner.custom_internal_ssl = custom_internal_ssl
@@ -77,8 +77,8 @@ class OutpostSpawner(ForwardBaseSpawner):
         
         Example::
             
-            def custom_check_allowed(spawner):
-                if not spawner.user_options.get("allowed", True):
+            def custom_check_allowed(spawner, user_options):
+                if not user_options.get("allowed", True):
                     raise Exception("This is not allowed")
             
             c.OutpostSpawner.check_allowed = custom_check_allowed
@@ -95,11 +95,11 @@ class OutpostSpawner(ForwardBaseSpawner):
         
         Example::
         
-            async def custom_env(spawner):
+            async def custom_env(spawner, user_options):
                 env = {
                     "JUPYTERHUB_STAGE": os.environ.get("JUPYTERHUB_STAGE", ""),
                     "JUPYTERHUB_DOMAIN": os.environ.get("JUPYTERHUB_DOMAIN", ""),
-                    "JUPYTERHUB_OPTION1": spawner.user_options.get("option1", "")
+                    "JUPYTERHUB_OPTION1": user_options.get("option1", "")
                 }
                 return env
             
@@ -159,7 +159,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         
         Example::
         
-            async def custom_misc(spawner):
+            async def custom_misc(spawner, user_options):
                 return {
                     "image": "jupyter/base-notebook:latest"
                 }
@@ -185,7 +185,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 
         Example::
         
-            def request_kwargs(spawner):
+            def request_kwargs(spawner, user_options):
                 return {
                     "request_timeout": 30,
                     "connect_timeout": 10,
@@ -207,8 +207,8 @@ class OutpostSpawner(ForwardBaseSpawner):
         Example::
         
             from jupyterhub.utils import random_potr
-            def custom_port(spawner):
-                if spawner.user_options.get("system", "") == "A":
+            def custom_port(spawner, user_options):
+                if user_options.get("system", "") == "A":
                     return 8080
                 return random_port()
             
@@ -228,8 +228,8 @@ class OutpostSpawner(ForwardBaseSpawner):
         Example::
 
             import random
-            def custom_poll_interval(spawner):
-                system = spawner.user_options.get("system", "None")
+            def custom_poll_interval(spawner, user_options):
+                system = user_options.get("system", "None")
                 if system == "A":
                     base_poll_interval = 30
                     poll_interval_randomizer = 10
@@ -303,8 +303,8 @@ class OutpostSpawner(ForwardBaseSpawner):
         
         Example::
 
-            def request_url(spawner):
-                if spawner.user_options.get("system", "") == "A":
+            def request_url(spawner, user_options):
+                if user_options.get("system", "") == "A":
                     return "http://outpost.namespace.svc:8080/services/"
                 else:
                     return "https://remote-outpost.com/services/"
@@ -322,8 +322,8 @@ class OutpostSpawner(ForwardBaseSpawner):
                 
         Example::
 
-            def request_headers(spawner):
-                if spawner.user_options.get("system", "") == "A":
+            def request_headers(spawner, user_options):
+                if user_options.get("system", "") == "A":
                     auth = os.environ.get("SYSTEM_A_AUTHENTICATION")
                 else:
                     auth = os.environ.get("SYSTEM_B_AUTHENTICATION")
@@ -345,7 +345,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         """
         if callable(self.request_kwargs):
-            request_kwargs = self.request_kwargs(self)
+            request_kwargs = self.request_kwargs(self, self.user_options)
         else:
             request_kwargs = self.request_kwargs
         return request_kwargs
@@ -358,7 +358,7 @@ class OutpostSpawner(ForwardBaseSpawner):
           port (int): port of the newly created singleuser server
         """
         if callable(self.custom_port):
-            port = self.custom_port(self)
+            port = self.custom_port(self, self.user_options)
         elif self.custom_port:
             port = self.custom_port
         else:
@@ -374,7 +374,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                                  every x seconds.
         """
         if callable(self.custom_poll_interval):
-            poll_interval = self.custom_poll_interval(self)
+            poll_interval = self.custom_poll_interval(self, self.user_options)
         elif self.custom_poll_interval:
             poll_interval = self.custom_poll_interval
         else:
@@ -481,7 +481,7 @@ class OutpostSpawner(ForwardBaseSpawner):
           request_url (string): Used to communicate with Outpost service
         """
         if callable(self.request_url):
-            request_url = await maybe_future(self.request_url(self))
+            request_url = await maybe_future(self.request_url(self, self.user_options))
         else:
             request_url = self.request_url
         request_url = request_url.rstrip("/")
@@ -498,7 +498,9 @@ class OutpostSpawner(ForwardBaseSpawner):
         """
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
         if callable(self.request_headers):
-            request_headers = await maybe_future(self.request_headers(self))
+            request_headers = await maybe_future(
+                self.request_headers(self, self.user_options)
+            )
         else:
             request_headers = self.request_headers
         headers.update(request_headers)
@@ -510,7 +512,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         May raise an exception if start is not allowed.
         """
         if callable(self.check_allowed):
-            await maybe_future(self.check_allowed(self))
+            await maybe_future(self.check_allowed(self, self.user_options))
 
     async def get_custom_env(self):
         """Get customized environment variables
@@ -527,7 +529,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 del env[key]
 
         if callable(self.custom_env):
-            custom_env = await maybe_future(self.custom_env(self))
+            custom_env = await maybe_future(self.custom_env(self, self.user_options))
         else:
             custom_env = self.custom_env
         env.update(custom_env)
@@ -561,7 +563,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         """
         if callable(self.custom_misc):
-            custom_misc = await maybe_future(self.custom_misc(self))
+            custom_misc = await maybe_future(self.custom_misc(self, self.user_options))
         else:
             custom_misc = self.custom_misc
 
@@ -583,7 +585,9 @@ class OutpostSpawner(ForwardBaseSpawner):
                                Labels are used in svc and remote pod.
         """
         if callable(self.extra_labels):
-            extra_labels = await maybe_future(self.extra_labels(self))
+            extra_labels = await maybe_future(
+                self.extra_labels(self, self.user_options)
+            )
         else:
             extra_labels = self.extra_labels
 
@@ -698,7 +702,6 @@ class OutpostSpawner(ForwardBaseSpawner):
         await self.run_check_allowed()
         env = await self.get_custom_env()
         user_options = await self.get_custom_user_options()
-        auth_state = await self.get_custom_auth_state()
         misc = await self.get_custom_misc()
         name = self.name
 
@@ -707,7 +710,6 @@ class OutpostSpawner(ForwardBaseSpawner):
             "env": env,
             "user_options": user_options,
             "misc": misc,
-            "auth_state": custom_auth_state,
             "certs": {},
             "internal_trust_bundles": {},
         }
