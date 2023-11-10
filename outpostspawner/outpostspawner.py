@@ -738,45 +738,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         await maybe_future(self.run_post_spawn_request_hook(resp_json))
 
-        if self.internal_ssl:
-            proto = "https://"
-        else:
-            proto = "http://"
-
-        """
-        There are 3 possible scenarios for remote singleuser servers:
-        1. Reachable by JupyterHub (e.g. Outpost service running on same cluster)
-        2. Port forwarding required, and we know the service_address (e.g. Outpost service running on remote cluster)
-        3. Port forwarding required, but we don't know the service_address yet (e.g. start on a batch system)
-        """
-        ssh_enabled = self.get_ssh_enabled()
-        if ssh_enabled:
-            # Case 2: Create port forwarding to service_address given by Outpost service.
-
-            # Store port_forward_info, required for port forward removal
-            self.port_forward_info = resp_json
-            local_bind_address, port = await maybe_future(self.run_ssh_forward())
-            service_address = local_bind_address.removeprefix("http://").removeprefix(
-                "https://"
-            )
-            ret = f"{proto}{service_address}:{port}"
-        else:
-            if not resp_json.get("service", ""):
-                # Case 3: service_address not known yet.
-                # Wait for service at default address. The singleuser server itself
-                # has to call the SetupTunnel API with it's actual location.
-                # This will trigger the delayed port forwarding.
-                ret = f"{proto}{self.svc_name}:{self.port}"
-            else:
-                # Case 1: No port forward required, just connect to given service_address
-                service_address, port = self.split_service_address(
-                    resp_json.get("service")
-                )
-                ret = f"{proto}{service_address}:{port}"
-
-        self.custom_port = int(port)
-        self.log.info(f"Expect JupyterLab at {ret}")
-        return ret
+        return resp_json.get("service", "")
 
     async def _poll(self):
         url = await self.get_request_url(attach_name=True)
