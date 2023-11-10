@@ -6,12 +6,14 @@ import string
 import subprocess
 import time
 import traceback
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
 import escapism
+from forwardbasespawner import ForwardBaseSpawner
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import maybe_future
 from jupyterhub.utils import random_port
@@ -197,25 +199,6 @@ class OutpostSpawner(ForwardBaseSpawner):
         """,
     ).tag(config=True)
 
-    custom_port = Union(
-        [Integer(), Callable()],
-        default_value=8080,
-        help="""
-        An optional hook function, or dict, you can implement to define
-        a port depending on the spawner object.
-        
-        Example::
-        
-            from jupyterhub.utils import random_potr
-            def custom_port(spawner, user_options):
-                if user_options.get("system", "") == "A":
-                    return 8080
-                return random_port()
-            
-            c.OutpostSpawner.custom_port = custom_port
-        """,
-    ).tag(config=True)
-
     custom_poll_interval = Union(
         [Integer(), Callable()],
         default_value=0,
@@ -349,21 +332,6 @@ class OutpostSpawner(ForwardBaseSpawner):
         else:
             request_kwargs = self.request_kwargs
         return request_kwargs
-
-    @property
-    def port(self):
-        """Get the port used for the singleuser server
-
-        Returns:
-          port (int): port of the newly created singleuser server
-        """
-        if callable(self.custom_port):
-            port = self.custom_port(self, self.user_options)
-        elif self.custom_port:
-            port = self.custom_port
-        else:
-            port = 0
-        return port
 
     @property
     def poll_interval(self):
@@ -770,6 +738,11 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         await maybe_future(self.run_post_spawn_request_hook(resp_json))
 
+        if self.internal_ssl:
+            proto = "https://"
+        else:
+            proto = "http://"
+
         """
         There are 3 possible scenarios for remote singleuser servers:
         1. Reachable by JupyterHub (e.g. Outpost service running on same cluster)
@@ -801,9 +774,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 )
                 ret = f"{proto}{service_address}:{port}"
 
-        # Port may have changed in port forwarding or by remote Outpost service.
-        self.port = int(port)
-
+        self.custom_port = int(port)
         self.log.info(f"Expect JupyterLab at {ret}")
         return ret
 
