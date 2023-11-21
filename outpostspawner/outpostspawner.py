@@ -42,33 +42,6 @@ class OutpostSpawner(ForwardBaseSpawner):
     a JupyterHub Outpost service.
     """
 
-    @property
-    def internal_ssl(self):
-        """
-        Returns self.custom_internal_ssl result if defined, user.settings.get('internal_ssl', False) otherwise
-        """
-        if self.custom_internal_ssl:
-            ret = self.custom_internal_ssl(self, self.user_options)
-        else:
-            ret = self.user.settings.get("internal_ssl", False)
-        return ret
-
-    custom_internal_ssl = Any(
-        help="""
-        An optional hook function you can implement do override the internal_ssl
-        value for a spawner. Return value must be boolean.
-        
-        This may be a coroutine.
-        
-        Example::
-        
-            def custom_internal_ssl(spawner, user_options):
-                return spawner.name.startswith("ssl-")
-        
-            c.OutpostSpawner.custom_internal_ssl = custom_internal_ssl
-        """,
-    ).tag(config=True)
-
     check_allowed = Any(
         help="""
         An optional hook function you can implement to double check if the
@@ -140,7 +113,8 @@ class OutpostSpawner(ForwardBaseSpawner):
             custom_misc.update({
               "dns_name_template": self.dns_name_template,
               "pod_name_template": self.svc_name_template,
-              "internal_ssl": self.interal_ssl,
+              "internal_ssl": self.internal_ssl,
+              "ip": "0.0.0.0",
               "port": self.port,
               "services_enabled": True,
               "extra_labels": extra_labels
@@ -204,7 +178,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         default_value=0,
         help="""
         An optional hook function, or dict, you can implement to define
-        the poll interval (in seconds). This allows you to have to different intervals
+        the poll interval (in milliseconds). This allows you to have to different intervals
         for different Outpost services. You can use this to randomize the poll interval
         for each spawner object. 
         
@@ -348,6 +322,32 @@ class OutpostSpawner(ForwardBaseSpawner):
         else:
             poll_interval = 1e3 * 30
         return poll_interval
+
+    def start_polling(self):
+        # Override start_polling function. We want to use milliseconds
+        # instead of seconds.
+        """Start polling periodically for single-user server's running state.
+
+        Callbacks registered via `add_poll_callback` will fire if/when the server stops.
+        Explicit termination via the stop method will not trigger the callbacks.
+        """
+        if self.poll_interval <= 0:
+            self.log.debug("Not polling subprocess")
+            return
+        elif self.poll_interval < 1000:
+            self.log.warning(
+                "Current poll interval ( {self.poll_interval} ) is lower than 1000. Assume that the configured value is in seconds. Multiply poll_interval by 1000."
+            )
+            poll_interval = self.poll_interval * 1000
+        else:
+            poll_interval = self.poll_interval
+
+        self.log.debug("Polling subprocess every %i ms", poll_interval)
+
+        self.stop_polling()
+
+        self._poll_callback = PeriodicCallback(self.poll_and_notify, poll_interval)
+        self._poll_callback.start()
 
     def run_pre_spawn_hook(self):
         """Prepare some variables and show the first event"""
@@ -540,6 +540,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             custom_misc["pod_name_template"] = self.svc_name_template
             custom_misc["internal_ssl"] = self.internal_ssl
             custom_misc["port"] = self.port
+            custom_misc["ip"] = "0.0.0.0"
             custom_misc["services_enabled"] = True
             custom_misc["extra_labels"] = await self.get_extra_labels()
 
