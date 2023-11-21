@@ -332,17 +332,19 @@ class OutpostSpawner(ForwardBaseSpawner):
         Explicit termination via the stop method will not trigger the callbacks.
         """
         if self.poll_interval <= 0:
-            self.log.debug("Not polling subprocess")
+            self.log.debug(f"{self._log_name} - Not polling subprocess")
             return
         elif self.poll_interval < 1000:
             self.log.warning(
-                "Current poll interval ( {self.poll_interval} ) is lower than 1000. Assume that the configured value is in seconds. Multiply poll_interval by 1000."
+                f"{self._log_name} - Current poll interval ( {self.poll_interval} ) is lower than 1000. Assume that the configured value is in seconds. Multiply poll_interval by 1000."
             )
             poll_interval = self.poll_interval * 1000
         else:
             poll_interval = self.poll_interval
 
-        self.log.debug("Polling subprocess every %i ms", poll_interval)
+        self.log.debug(
+            f"{self._log_name} - Polling subprocess every %i ms", poll_interval
+        )
 
         self.stop_polling()
 
@@ -493,7 +495,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         # Remove keys that might disturb new JupyterLabs (like PATH, PYTHONPATH)
         for key in set(env.keys()):
             if not (key.startswith("JUPYTER_") or key.startswith("JUPYTERHUB_")):
-                self.log.info(f"Remove {key} from env")
+                self.log.debug(f"{self._log_name} - Remove {key} from env")
                 del env[key]
 
         if callable(self.custom_env):
@@ -608,7 +610,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 traceback = ""
             url = urlunparse(urlparse(req.url)._replace(query=""))
             self.log.exception(
-                f"Communication with outpost failed: {e.code} {req.method} {url}: {message}.\nOutpost traceback:\n{traceback}",
+                f"{self._log_name} - Communication with outpost failed: {e.code} {req.method} {url}: {message}.\nOutpost traceback:\n{traceback}",
                 extra={
                     "uuidcode": self.name,
                     "log_name": self._log_name,
@@ -650,7 +652,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         finally:
             toc = str(time.monotonic() - tic)
             self.log.info(
-                f"Communicated {action} with Outpost service ( {req.url} ) (request duration: {toc})",
+                f"{self._log_name} - Communicated {action} with Outpost service ( {req.url} ) (request duration: {toc})",
                 extra={
                     "uuidcode": self.name,
                     "log_name": self._log_name,
@@ -708,7 +710,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             # If JupyterHub could not start the service, additional
             # actions may be required.
             self.log.exception(
-                "Send Request failed",
+                f"{self._log_name} - Send Request failed",
                 extra={
                     "uuidcode": self.name,
                     "log_name": self._log_name,
@@ -721,7 +723,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 await self.stop()
             except:
                 self.log.exception(
-                    "Could not stop service which failed to start.",
+                    f"{self._log_name} - Could not stop service which failed to start.",
                     extra={
                         "uuidcode": self.name,
                         "log_name": self._log_name,
