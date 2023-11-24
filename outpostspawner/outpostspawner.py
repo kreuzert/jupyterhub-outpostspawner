@@ -70,12 +70,15 @@ class OutpostSpawner(ForwardBaseSpawner):
         
         Example::
         
-            async def custom_env(spawner, user_options):
+            async def custom_env(spawner, user_options, jupyterhub_api_url):
+                system = user_options.get("system", "")
                 env = {
                     "JUPYTERHUB_STAGE": os.environ.get("JUPYTERHUB_STAGE", ""),
                     "JUPYTERHUB_DOMAIN": os.environ.get("JUPYTERHUB_DOMAIN", ""),
                     "JUPYTERHUB_OPTION1": user_options.get("option1", "")
                 }
+                if system:
+                    env["JUPYTERHUB_FLAVORS_UPDATE_URL"] = f"{jupyterhub_api_url.rstrip('/')}/outpostflavors/{system}"
                 return env
             
             c.OutpostSpawner.custom_env = custom_env
@@ -499,7 +502,9 @@ class OutpostSpawner(ForwardBaseSpawner):
                 del env[key]
 
         if callable(self.custom_env):
-            custom_env = await maybe_future(self.custom_env(self, self.user_options))
+            custom_env = await maybe_future(
+                self.custom_env(self, self.user_options, env["JUPYTERHUB_API_URL"])
+            )
         else:
             custom_env = self.custom_env
         env.update(custom_env)
