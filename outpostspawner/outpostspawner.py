@@ -1,25 +1,14 @@
 import asyncio
-import inspect
 import json
-import os
-import string
-import subprocess
 import time
-import traceback
 from datetime import datetime
-from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
 import escapism
 from forwardbasespawner import ForwardBaseSpawner
-from jupyterhub.spawner import Spawner
 from jupyterhub.utils import maybe_future
-from jupyterhub.utils import random_port
-from jupyterhub.utils import url_path_join
-from kubernetes import client
-from kubernetes import config
 from tornado import web
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPClientError
@@ -31,7 +20,6 @@ from traitlets import Callable
 from traitlets import default
 from traitlets import Dict
 from traitlets import Integer
-from traitlets import List
 from traitlets import Unicode
 from traitlets import Union
 
