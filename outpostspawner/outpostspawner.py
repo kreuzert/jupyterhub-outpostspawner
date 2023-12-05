@@ -750,10 +750,14 @@ class OutpostSpawner(ForwardBaseSpawner):
             resp_json = await self.send_request(req, action="poll")
         except Exception as e:
             ret = 0
-            if type(e).__name__ == "HTTPClientError" and getattr(e, "code", 500) == 404:
+            if (
+                type(e).__name__ == "HTTPError"
+                and getattr(e, "status_code", 500) == 419
+                and getattr(e, "log_message", "500").endswith("404")
+            ):
                 if self.request_404_poll_keep_running:
                     ret = None
-            if self.request_failed_poll_keep_running:
+            elif self.request_failed_poll_keep_running:
                 ret = None
         else:
             ret = resp_json.get("status", None)
