@@ -10,7 +10,6 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPRequest
 
 _outpost_flavors_cache = {}
-_initial_flavor_retrieval = True
 
 
 class OutpostFlavorsAPIHandler(APIHandler):
@@ -39,11 +38,8 @@ class OutpostFlavorsAPIHandler(APIHandler):
 
     async def get(self):
         global _outpost_flavors_cache
-        global _initial_flavor_retrieval
 
-        if _initial_flavor_retrieval and not _outpost_flavors_cache:
-            self.log.info("InitialOutpostFlavor - Load initial flavors")
-            _initial_flavor_retrieval = False
+        if not _outpost_flavors_cache:
             try:
                 initial_system_names = os.environ.get(
                     "OUTPOST_FLAVOR_INITIAL_SYSTEM_NAMES", ""
@@ -59,6 +55,9 @@ class OutpostFlavorsAPIHandler(APIHandler):
                     initial_system_names_list = initial_system_names.split(";")
                     initial_system_urls_list = initial_system_urls.split(";")
                     initial_system_tokens_list = initial_system_tokens.split(";")
+                    self.log.info(
+                        f"OutpostFlavors - Connect to {initial_system_names_list} / {initial_system_urls_list}"
+                    )
 
                     urls_tokens = list(
                         zip(initial_system_urls_list, initial_system_tokens_list)
@@ -80,23 +79,25 @@ class OutpostFlavorsAPIHandler(APIHandler):
                         if name_result[1].code == 200:
                             try:
                                 self.log.info(
-                                    f"InitialOutpostFlavor - {name_result[0]} successful"
+                                    f"OutpostFlavors - {name_result[0]} successful"
                                 )
                                 result_json = json.loads(name_result[1].body)
                             except:
                                 self.log.exception(
-                                    f"InitialOutpostFlavor - {name_result[0]} Could not load result into json"
+                                    f"OutpostFlavors - {name_result[0]} Could not load result into json"
                                 )
                                 result_json = {}
                         else:
                             self.log.warning(
-                                f"InitialOutpostFlavor - {name_result[0]} - Answered with {name_result[1].code}"
+                                f"OutpostFlavors - {name_result[0]} - Answered with {name_result[1].code}"
                             )
                             result_json = {}
                         ret[name_result[0]] = result_json
             except:
-                self.log.exception("InitialOutpostFlavor failed, return empty dict")
+                self.log.exception("OutpostFlavors failed, return empty dict")
                 ret = {}
+            else:
+                self.log.info(f"OutpostFlavors successful. Return {ret}")
             _outpost_flavors_cache = ret
         self.write(json.dumps(_outpost_flavors_cache))
         self.set_status(200)
