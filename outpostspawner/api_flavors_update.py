@@ -39,22 +39,39 @@ class OutpostFlavorsAPIHandler(APIHandler):
     async def get(self):
         global _outpost_flavors_cache
 
-        if not _outpost_flavors_cache:
-            try:
-                initial_system_names = os.environ.get(
-                    "OUTPOST_FLAVOR_INITIAL_SYSTEM_NAMES", ""
-                )
-                initial_system_urls = os.environ.get(
-                    "OUTPOST_FLAVOR_INITIAL_SYSTEM_URLS", ""
-                )
-                initial_system_tokens = os.environ.get(
-                    "OUTPOST_FLAVOR_INITIAL_SYSTEM_TOKENS", ""
-                )
+        try:
+            initial_system_names = os.environ.get(
+                "OUTPOST_FLAVOR_INITIAL_SYSTEM_NAMES", ""
+            )
+            initial_system_urls = os.environ.get(
+                "OUTPOST_FLAVOR_INITIAL_SYSTEM_URLS", ""
+            )
+            initial_system_tokens = os.environ.get(
+                "OUTPOST_FLAVOR_INITIAL_SYSTEM_TOKENS", ""
+            )
 
-                if initial_system_names and initial_system_urls:
-                    initial_system_names_list = initial_system_names.split(";")
-                    initial_system_urls_list = initial_system_urls.split(";")
-                    initial_system_tokens_list = initial_system_tokens.split(";")
+            # If initial checks are configured
+            if initial_system_names and initial_system_urls:
+                initial_system_names_list_all = initial_system_names.split(";")
+                initial_system_urls_list_all = initial_system_urls.split(";")
+                initial_system_tokens_list_all = initial_system_tokens.split(";")
+
+                initial_system_names_list = []
+                initial_system_urls_list = []
+                initial_system_tokens_list = []
+                i = 0
+                # Only check for initial checks, when they're not yet part of _outpost_flavors_cache
+                for system_name in initial_system_names_list_all:
+                    if system_name not in _outpost_flavors_cache.keys():
+                        initial_system_names_list.append(system_name)
+                        initial_system_urls_list.append(initial_system_urls_list_all[i])
+                        initial_system_tokens_list.append(
+                            initial_system_tokens_list_all[i]
+                        )
+                    i += 1
+
+                # If systems are left without successful initial check, try to reach the Outpost
+                if initial_system_names_list:
                     self.log.info(
                         f"OutpostFlavors - Connect to {initial_system_names_list} / {initial_system_urls_list}"
                     )
@@ -93,12 +110,13 @@ class OutpostFlavorsAPIHandler(APIHandler):
                             )
                             result_json = {}
                         ret[name_result[0]] = result_json
-            except:
-                self.log.exception("OutpostFlavors failed, return empty dict")
-                ret = {}
-            else:
-                self.log.info(f"OutpostFlavors successful. Return {ret}")
-            _outpost_flavors_cache = ret
+        except:
+            self.log.exception("OutpostFlavors failed, return empty dict")
+            ret = {}
+        else:
+            self.log.info(f"OutpostFlavors successful. Return {ret}")
+        _outpost_flavors_cache = ret
+
         self.write(json.dumps(_outpost_flavors_cache))
         self.set_status(200)
         return
