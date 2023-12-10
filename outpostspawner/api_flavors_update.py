@@ -38,6 +38,7 @@ class OutpostFlavorsAPIHandler(APIHandler):
 
     async def get(self):
         global _outpost_flavors_cache
+        ret = {}
 
         try:
             initial_system_names = os.environ.get(
@@ -91,7 +92,6 @@ class OutpostFlavorsAPIHandler(APIHandler):
                         tasks.append(http_client.fetch(req, raise_error=False))
                     results = await asyncio.gather(*tasks)
                     names_results = list(zip(initial_system_names_list, results))
-                    ret = {}
                     for name_result in names_results:
                         if name_result[1].code == 200:
                             try:
