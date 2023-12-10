@@ -113,8 +113,6 @@ class OutpostFlavorsAPIHandler(APIHandler):
         except:
             self.log.exception("OutpostFlavors failed, return empty dict")
             ret = {}
-        else:
-            self.log.info(f"OutpostFlavors successful. Return {ret}")
         _outpost_flavors_cache = ret
 
         self.write(json.dumps(_outpost_flavors_cache))
