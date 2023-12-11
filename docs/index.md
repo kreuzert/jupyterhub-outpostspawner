@@ -2,7 +2,7 @@
 
 # OutpostSpawner
 
-The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub-outpost) enables JupyterHub to spawn single-user notebook servers on heterogenous remote resources.
+The OutpostSpawner in combination with the [JupyterHub Outpost service](https://github.com/kreuzert/jupyterhub-outpost) enables JupyterHub to spawn single-user notebook servers on heterogenous remote resources. It is a subclass of the [JupyterHub ForwardBaseSpawner](https://github.com/kreuzert/jupyterhub-forwardbasespawner).
 
 ## Overview  
   
@@ -10,7 +10,7 @@ The JupyterHub community has created many useful [JupyterHub Spawners](https://j
 
 While Spawners like the [SSHSpawner](https://github.com/NERSC/sshspawner) can already spawn single-user servers on remote systems, they are not able to utilize system-specific features like [KubeSpawner](https://github.com/jupyterhub/kubespawner) or [BatchSpawner](https://github.com/jupyterhub/batchspawner). 
   
-The JupyterHub Outpost service in combination with the OutpostSpawner enables a single JupyterHub to spawn single-user notebook servers using a variety of Spawners on a variety of remote systems.
+The OutpostSpawner in combination with the JupyterHub Outpost service enables a single JupyterHub to spawn single-user notebook servers using a variety of Spawners on a variety of remote systems.
   
 - Use one JupyterHub to offer single-user servers on multiple systems of potentially different types.
 - Each (remote) system may use a different JupyterHub Spawner.
@@ -18,7 +18,7 @@ The JupyterHub Outpost service in combination with the OutpostSpawner enables a 
 - Users can override the configuration of the remote Spawner at runtime (e.g. to select a different Docker Image).
 - Integrated SSH port forwarding solution to reach otherwise isolated remote single-user servers.
 - Supports the JupyterHub `internal_ssl` feature.
-- One JupyterHub Outpost can be connected to multiple JupyterHubs without the Hubs interfering with each other.
+- One JupyterHub Outpost can be connected to multiple JupyterHubs without interfering with each other.
   
 ## Requirements  
   
@@ -54,6 +54,5 @@ The JupyterHub Outpost must fulfill the requirements of the configured Spawner c
     :caption: Spawners
 
     spawners/outpostspawner
-    spawners/eventoutpostspawner
     apiendpoints
 ```
