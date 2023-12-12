@@ -38,7 +38,6 @@ class OutpostFlavorsAPIHandler(APIHandler):
 
     async def get(self):
         global _outpost_flavors_cache
-        ret = {}
 
         try:
             initial_system_names = os.environ.get(
@@ -99,21 +98,17 @@ class OutpostFlavorsAPIHandler(APIHandler):
                                     f"OutpostFlavors - {name_result[0]} successful"
                                 )
                                 result_json = json.loads(name_result[1].body)
+                                _outpost_flavors_cache[name_result[0]] = result_json
                             except:
                                 self.log.exception(
                                     f"OutpostFlavors - {name_result[0]} Could not load result into json"
                                 )
-                                result_json = {}
                         else:
                             self.log.warning(
                                 f"OutpostFlavors - {name_result[0]} - Answered with {name_result[1].code}"
                             )
-                            result_json = {}
-                        ret[name_result[0]] = result_json
         except:
             self.log.exception("OutpostFlavors failed, return empty dict")
-            ret = {}
-        _outpost_flavors_cache = ret
 
         self.write(json.dumps(_outpost_flavors_cache))
         self.set_status(200)
