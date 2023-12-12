@@ -261,6 +261,20 @@ class OutpostSpawner(ForwardBaseSpawner):
         """,
     ).tag(config=True)
 
+    start_async = Bool(
+        default_value=False,
+        help="""
+        Whether the start at the Outpost service should run in the background or not.
+        """,
+    ).tag(config=True)
+
+    stop_async = Bool(
+        default_value=False,
+        help="""
+        Whether the stop at the Outpost service should run in the background or not.
+        """,
+    ).tag(config=True)
+
     request_headers = Union(
         [Dict(), Callable()],
         help="""
@@ -689,6 +703,8 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         request_header = await self.get_request_headers()
         url = await self.get_request_url()
+        if self.start_async:
+            headers["execution-type"] = "async"
 
         req = HTTPRequest(
             url=url,
@@ -768,6 +784,8 @@ class OutpostSpawner(ForwardBaseSpawner):
     async def _stop(self, now=False, cancel=False, event=None, **kwargs):
         url = await self.get_request_url(attach_name=True)
         headers = await self.get_request_headers()
+        if self.stop_async:
+            headers["execution-type"] = "async"
         req = HTTPRequest(
             url=url,
             method="DELETE",
