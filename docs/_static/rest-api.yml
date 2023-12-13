@@ -67,7 +67,7 @@ paths:
         `failed`: `true`.
 
         If `html_message` is used, the current timestamp (format
-        "%Y_%m_%d %H:%M:%S.%f") will be used as prefix. When the `html_message`
+        "%Y-%m-%d %H:%M:%S.%f") will be used as prefix. When the `html_message`
         starts with `<details><summary>` the timestamp will be placed like this:
         `<details><summary>{now}: `
       parameters:
@@ -186,7 +186,7 @@ paths:
         `failed`: `true`.
 
         If `html_message` is used, the current timestamp (format
-        "%Y_%m_%d %H:%M:%S.%f") will be used as prefix. When the `html_message`
+        "%Y-%m-%d %H:%M:%S.%f") will be used as prefix. When the `html_message`
         starts with `<details><summary>` the timestamp will be placed like this:
         `<details><summary>{now}: `
       parameters:

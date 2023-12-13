@@ -363,7 +363,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         ret = super().run_pre_spawn_hook()
 
-        now = datetime.now().strftime("%Y_%m_%d %H:%M:%S.%f")[:-3]
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         start_pre_msg = "Sending request to Outpost service to start your service."
         start_event = {
             "failed": False,
@@ -383,7 +383,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         return
 
     async def run_failed_spawn_request_hook(self, exception):
-        now = datetime.now().strftime("%Y_%m_%d %H:%M:%S.%f")[:-3]
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         event = {
             "progress": 99,
             "failed": False,
@@ -412,7 +412,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         async def _get_stop_event(spawner):
             """Setting self.stop_event to a function will show us the correct
             datetime, when stop_event is shown to the user."""
-            now = datetime.now().strftime("%Y_%m_%d %H:%M:%S.%f")[:-3]
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
             event = {
                 "progress": 100,
                 "failed": True,
@@ -432,7 +432,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
     def run_post_spawn_request_hook(self, resp_json):
         """If communication was successful, we show this to the user"""
-        now = datetime.now().strftime("%Y_%m_%d %H:%M:%S.%f")[:-3]
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         progress = 20
         if (
             self.latest_events
