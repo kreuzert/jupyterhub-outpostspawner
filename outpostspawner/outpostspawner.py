@@ -461,7 +461,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             request_url = self.request_url
         request_url = request_url.rstrip("/")
         if attach_name:
-            request_url = f"{request_url}/{self.name}/{self.unique_start_id}"
+            request_url = f"{request_url}/{self.name}/{self.start_id}"
         return request_url
 
     async def get_request_headers(self):
@@ -529,7 +529,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         else:
             custom_user_options = self.custom_user_options
         user_options.update(custom_user_options)
-        user_options["unique_start_id"] = self.unique_start_id
+        user_options["start_id"] = self.start_id
         return user_options
 
     async def get_custom_misc(self):
