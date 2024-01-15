@@ -776,6 +776,9 @@ class OutpostSpawner(ForwardBaseSpawner):
                     ret = None
             elif self.request_failed_poll_keep_running:
                 ret = None
+            self.log.exception(
+                f"{self._log_name} - Could not poll current status - Return {ret}"
+            )
         else:
             ret = resp_json.get("status", None)
 
