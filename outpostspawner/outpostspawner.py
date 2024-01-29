@@ -1,6 +1,7 @@
 import asyncio
 import json
 import time
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
@@ -521,7 +522,7 @@ class OutpostSpawner(ForwardBaseSpawner):
           user_options (dict): Used in communication with Outpost service.
 
         """
-        user_options = self.user_options
+        user_options = deepcopy(self.user_options)
         if callable(self.custom_user_options):
             custom_user_options = await maybe_future(
                 self.custom_user_options(self, user_options)
