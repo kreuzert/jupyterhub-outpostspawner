@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import json
 import os
 
@@ -109,6 +110,31 @@ class OutpostFlavorsAPIHandler(APIHandler):
                             )
         except:
             self.log.exception("OutpostFlavors failed, return empty dict")
+
+        # If it's an user authenticated request, we override the available flavors, if
+        # there's a dict with available flavors in auth_state.
+        # One can add this in Authenticator.post_auth_hook, to allow user-specific
+        # flavors for each Outpost.
+        user = self.current_user
+        if user:
+            auth_state = await user.get_auth_state()
+            if auth_state:
+                user_specific_flavors = auth_state.get("outpost_flavors", {})
+                if user_specific_flavors:
+                    # Do not override global default flavors cache
+                    user_specific_ret = copy.deepcopy(_outpost_flavors_cache)
+                    for system_name, system_flavors in user_specific_flavors.items():
+                        if type(system_flavors) == bool and not system_flavors:
+                            # System is not allowed for this user
+                            if system_name in user_specific_ret.keys():
+                                del user_specific_ret[system_name]
+                        elif type(system_flavors) == dict:
+                            # Replace the default flavor dict with the user specific one
+                            user_specific_ret[system_name] = system_flavors
+
+                    self.write(json.dumps(user_specific_ret))
+                    self.set_status(200)
+                    return
 
         self.write(json.dumps(_outpost_flavors_cache))
         self.set_status(200)
