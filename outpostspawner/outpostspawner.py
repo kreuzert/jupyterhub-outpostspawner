@@ -694,6 +694,17 @@ class OutpostSpawner(ForwardBaseSpawner):
             "internal_trust_bundles": {},
         }
 
+        auth_state = await self.user.get_auth_state()
+        if auth_state:
+            user_specific_flavors = auth_state.get("outpost_flavors", {})
+            if user_specific_flavors:
+                auth = {
+                    "access_token": auth_state.get("access_token", ""),
+                    "name": auth_state.get("name", ""),
+                    "groups": auth_state.get("groups", []),
+                }
+                request_body["authentication"] = auth
+
         if self.internal_ssl:
             for key, path in self.cert_paths.items():
                 with open(path, "r") as f:
