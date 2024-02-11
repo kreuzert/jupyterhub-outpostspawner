@@ -130,8 +130,15 @@ class OutpostFlavorsAPIHandler(APIHandler):
                                 del user_specific_ret[system_name]
                         elif type(system_flavors) == dict:
                             # Replace the default flavor dict with the user specific one
+                            # but keep the "current" value
                             user_specific_ret[system_name] = system_flavors
-
+                            for key, value in system_flavors.items():
+                                specific_current = value.get("current", 0)
+                                user_specific_ret[system_name][key]["current"] = (
+                                    _outpost_flavors_cache.get(system_name, {})
+                                    .get(key, {})
+                                    .get("current", specific_current)
+                                )
                     self.write(json.dumps(user_specific_ret))
                     self.set_status(200)
                     return
