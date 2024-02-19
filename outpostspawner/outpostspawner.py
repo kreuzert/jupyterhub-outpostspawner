@@ -715,7 +715,8 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         request_header = await self.get_request_headers()
         url = await self.get_request_url()
-        if self.start_async:
+        ssh_during_startup = self.get_ssh_during_startup()
+        if self.start_async and not ssh_during_startup:
             request_header["execution-type"] = "async"
 
         req = HTTPRequest(
