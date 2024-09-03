@@ -313,6 +313,43 @@ class OutpostSpawner(ForwardBaseSpawner):
             request_kwargs = self.request_kwargs
         return request_kwargs
 
+    request_kwargs_start = Union(
+        [Dict(), Callable()],
+        default_value=None,
+        help="""
+        An optional hook function, or dict, you can implement to define
+        keyword arguments for the start request sent to the JupyterHub Outpost service.
+        They are directly forwarded to the tornado.httpclient.HTTPRequest object.
+        If not defined, request_kwargs will be used instead.
+        Example::
+        
+            def request_kwargs(spawner, user_options):
+                return {
+                    "request_timeout": 30,
+                    "connect_timeout": 10,
+                    "ca_certs": ...,
+                    "validate_cert": ...,
+                }
+                
+            c.OutpostSpawner.request_kwargs = request_kwargs
+        """,
+    ).tag(config=True)
+
+    def get_request_kwargs_start(self):
+        """Get the request kwargs for start request
+
+        Returns:
+          request_kwargs (dict): Parameters used in HTTPRequest(..., **request_kwargs) in start request
+
+        """
+        if callable(self.request_kwargs_start):
+            request_kwargs_start = self.request_kwargs_start(self, self.user_options)
+        elif type(self.request_kwargs_start) == dict:
+            request_kwargs_start = self.request_kwargs_start
+        else:
+            request_kwargs_start = self.get_request_kwargs()
+        return request_kwargs_start
+
     @property
     def poll_interval(self):
         """Get poll interval.
@@ -724,7 +761,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             method="POST",
             headers=request_header,
             body=json.dumps(request_body),
-            **self.get_request_kwargs(),
+            **self.get_request_kwargs_start(),
         )
 
         try:
