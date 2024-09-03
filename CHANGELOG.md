@@ -1,3 +1,9 @@
+## 1.0.1 (2024-09-03)
+
+### added|fixed|changed|deprecated|removed|security|performance|other (1 change)
+
+- [Resolve "Start timeout when using sync start"](https://gitlab.jsc.fz-juelich.de/jupyterjsc/packages/jupyterhub-outpostspawner/-/commit/4dcc16722f1e322801c39e6ae64e2c6bbdf4cf2d) ([merge request](https://gitlab.jsc.fz-juelich.de/jupyterjsc/packages/jupyterhub-outpostspawner/-/merge_requests/4))
+
 ## 1.0.0 (2024-04-22)
 
 ### added (1 change)
