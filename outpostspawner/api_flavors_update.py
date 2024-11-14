@@ -60,24 +60,30 @@ async def async_get_flavors(log, user=None):
                     req = HTTPRequest(
                         url_token[0],
                         headers={"Authorization": f"Basic {url_token[1]}"},
+                        request_timeout=1,
                     )
                     tasks.append(http_client.fetch(req, raise_error=False))
-                results = await asyncio.gather(*tasks)
-                names_results = list(zip(initial_system_names_list, results))
-                for name_result in names_results:
-                    if name_result[1].code == 200:
-                        try:
-                            log.info(f"OutpostFlavors - {name_result[0]} successful")
-                            result_json = json.loads(name_result[1].body)
-                            _outpost_flavors_cache[name_result[0]] = result_json
-                        except:
-                            log.exception(
-                                f"OutpostFlavors - {name_result[0]} Could not load result into json"
+                try:
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
+                    names_results = list(zip(initial_system_names_list, results))
+                    for name_result in names_results:
+                        if name_result[1].code == 200:
+                            try:
+                                log.info(
+                                    f"OutpostFlavors - {name_result[0]} successful"
+                                )
+                                result_json = json.loads(name_result[1].body)
+                                _outpost_flavors_cache[name_result[0]] = result_json
+                            except:
+                                log.exception(
+                                    f"OutpostFlavors - {name_result[0]} Could not load result into json"
+                                )
+                        else:
+                            log.warning(
+                                f"OutpostFlavors - {name_result[0]} - Answered with {name_result[1].code}"
                             )
-                    else:
-                        log.warning(
-                            f"OutpostFlavors - {name_result[0]} - Answered with {name_result[1].code}"
-                        )
+                except:
+                    log.exception("OutpostFlavors failed, return empty dict")
     except:
         log.exception("OutpostFlavors failed, return empty dict")
 
