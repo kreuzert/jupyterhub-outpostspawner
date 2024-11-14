@@ -1,3 +1,7 @@
+## 1.0.2 (2024-11-14)
+
+No changes.
+
 ## 1.0.1 (2024-09-03)
 
 ### added|fixed|changed|deprecated|removed|security|performance|other (1 change)
