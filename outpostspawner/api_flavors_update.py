@@ -134,13 +134,11 @@ def sync_get_flavors(log, user):
     def t_get_flavors(loop, log, user):
         asyncio.set_event_loop(loop)
         ret = loop.run_until_complete(async_get_flavors(log, user))
-        log.info(ret)
         return ret
 
     t = Thread(target=t_get_flavors, args=(loop, log, user))
     t.start()
     ret = t.join()
-    log.info(ret)
     return ret
 
 
