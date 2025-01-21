@@ -409,7 +409,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             "html_message": f"<details><summary>{now}: {start_pre_msg}</summary>\
                 &nbsp;&nbsp;Start {self.name}<br>&nbsp;&nbsp;Options:<br><pre>{json.dumps(self.user_options, indent=2)}</pre></details>",
         }
-        self.latest_events = [start_event]
+        self.events = [start_event]
 
         return ret
 
@@ -427,7 +427,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             "failed": False,
             "html_message": f"<details><summary>{now}: JupyterLab start failed. Deleting related resources...</summary>This may take a few seconds.</details>",
         }
-        self.latest_events.append(event)
+        self.events.append(event)
         # Ensure that we're waiting 2*yield_wait_seconds, so that
         # events will be shown to the spawn-pending page.
         await asyncio.sleep(2 * self.yield_wait_seconds)
@@ -472,19 +472,15 @@ class OutpostSpawner(ForwardBaseSpawner):
         """If communication was successful, we show this to the user"""
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         progress = 20
-        if (
-            self.latest_events
-            and type(self.latest_events) == list
-            and len(self.latest_events) > 0
-        ):
-            progress = self.latest_events[-1].get("progress")
+        if self.events and type(self.events) == list and len(self.events) > 0:
+            progress = self.events[-1].get("progress")
         submitted_event = {
             "failed": False,
             "ready": False,
             "progress": progress,
             "html_message": f"<details><summary>{now}: Outpost communication successful.</summary>You will receive further information about the service status from the service itself.</details>",
         }
-        self.latest_events.append(submitted_event)
+        self.events.append(submitted_event)
         return self.post_spawn_request_hook(self, resp_json)
 
     async def get_request_url(self, attach_name=False):
@@ -809,7 +805,6 @@ class OutpostSpawner(ForwardBaseSpawner):
             raise e
 
         await maybe_future(self.run_post_spawn_request_hook(resp_json))
-
         return resp_json.get("service", "")
 
     async def _poll(self):
