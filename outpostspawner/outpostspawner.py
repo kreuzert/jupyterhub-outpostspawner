@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import json
 import time
 from copy import deepcopy
@@ -7,7 +8,6 @@ from pathlib import Path
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
-import escapism
 from forwardbasespawner import ForwardBaseSpawner
 from jupyterhub.utils import maybe_future
 from tornado import web
@@ -36,15 +36,15 @@ class OutpostSpawner(ForwardBaseSpawner):
         An optional hook function you can implement to double check if the
         given user_options allow a start. If the start is not allowed, it should
         raise an exception.
-        
+
         This may be a coroutine.
-        
+
         Example::
-            
+
             def custom_check_allowed(spawner, user_options):
                 if not user_options.get("allowed", True):
                     raise Exception("This is not allowed")
-            
+
             c.OutpostSpawner.check_allowed = custom_check_allowed
         """,
     ).tag(config=True)
@@ -54,11 +54,11 @@ class OutpostSpawner(ForwardBaseSpawner):
         help="""
         An optional hook function, or dict, you can implement to add
         extra environment variables to send to the JupyterHub Outpost service.
-        
+
         This may be a coroutine.
-        
+
         Example::
-        
+
             async def custom_env(spawner, user_options, jupyterhub_api_url):
                 system = user_options.get("system", "")
                 env = {
@@ -69,7 +69,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 if system:
                     env["JUPYTERHUB_FLAVORS_UPDATE_URL"] = f"{jupyterhub_api_url.rstrip('/')}/outpostflavors/{system}"
                 return env
-            
+
             c.OutpostSpawner.custom_env = custom_env
         """,
     ).tag(config=True)
@@ -79,15 +79,15 @@ class OutpostSpawner(ForwardBaseSpawner):
         help="""
         An optional hook function, or dict, you can implement to add
         extra user_options to send to the JupyterHub Outpost service.
-        
+
         This may be a coroutine.
-        
+
         Example::
-        
+
             async def custom_user_options(spawner, user_options):
                 user_options["image"] = "jupyter/minimal-notebook:latest"
                 return user_options
-            
+
             c.OutpostSpawner.custom_user_options = custom_user_options
         """,
     ).tag(config=True)
@@ -96,9 +96,9 @@ class OutpostSpawner(ForwardBaseSpawner):
         default_value=False,
         help="""
         By default, these `misc` options will be send to the Outpost service
-        to override the corresponding values of the Spawner configured at the 
+        to override the corresponding values of the Spawner configured at the
         Outpost. You can disable this behaviour by setting this value to true.
-        
+
         Default `custom_misc` options::
 
             extra_labels = await self.get_extra_labels()
@@ -122,16 +122,16 @@ class OutpostSpawner(ForwardBaseSpawner):
         This will override the Spawner configuration set at the Outpost.
         `key` can be anything you would normally use in your Spawner configuration:
         `c.OutpostSpawner.<key> = <value>`
-        
+
         This may be a coroutine.
-        
+
         Example::
-        
+
             async def custom_misc(spawner, user_options):
                 return {
                     "image": "jupyter/base-notebook:latest"
                 }
-            
+
             c.OutpostSpawner.custom_misc = custom_misc
 
         will override the image configured at the Outpost::
@@ -150,9 +150,9 @@ class OutpostSpawner(ForwardBaseSpawner):
         An optional hook function, or dict, you can implement to define
         keyword arguments for all requests sent to the JupyterHub Outpost service.
         They are directly forwarded to the tornado.httpclient.HTTPRequest object.
-                
+
         Example::
-        
+
             def request_kwargs(spawner, user_options):
                 return {
                     "request_timeout": 30,
@@ -160,7 +160,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                     "ca_certs": ...,
                     "validate_cert": ...,
                 }
-                
+
             c.OutpostSpawner.request_kwargs = request_kwargs
         """,
     ).tag(config=True)
@@ -172,8 +172,8 @@ class OutpostSpawner(ForwardBaseSpawner):
         An optional hook function, or dict, you can implement to define
         the poll interval (in milliseconds). This allows you to have to different intervals
         for different Outpost services. You can use this to randomize the poll interval
-        for each spawner object. 
-        
+        for each spawner object.
+
         Example::
 
             import random
@@ -188,7 +188,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 else:
                     poll_interval = 0
                 return poll_interval
-            
+
             c.OutpostSpawner.custom_poll_interval = custom_poll_interval
         """,
     ).tag(config=True)
@@ -198,15 +198,15 @@ class OutpostSpawner(ForwardBaseSpawner):
         An optional hook function you can implement to handle a failed
         start attempt properly. This will be called if the POST request
         to the Outpost service was not successful.
-        
+
         This may be a coroutine.
-        
+
         Example::
 
             def custom_failed_spawn_request_hook(Spawner, exception_thrown):
                 ...
                 return
-            
+
             c.OutpostSpawner.failed_spawn_request_hook = custom_failed_spawn_request_hook
         """
     ).tag(config=True)
@@ -216,22 +216,22 @@ class OutpostSpawner(ForwardBaseSpawner):
         An optional hook function you can implement to handle a successful
         start attempt properly. This will be called if the POST request
         to the Outpost service was successful.
-        
+
         This may be a coroutine.
-        
+
         Example::
-        
+
             def post_spawn_request_hook(Spawner, resp_json):
                 ...
                 return
-            
+
             c.OutpostSpawner.post_spawn_request_hook = post_spawn_request_hook
         """
     ).tag(config=True)
 
     request_404_poll_keep_running = Bool(
         default_value=False,
-        help="""        
+        help="""
         How to handle a 404 response from Outpost API during a singleuser poll request.
         """,
     ).tag(config=True)
@@ -246,10 +246,10 @@ class OutpostSpawner(ForwardBaseSpawner):
     request_url = Union(
         [Unicode(), Callable()],
         help="""
-        The URL used to communicate with the JupyterHub Outpost service. 
-        
+        The URL used to communicate with the JupyterHub Outpost service.
+
         This may be a coroutine.
-        
+
         Example::
 
             def request_url(spawner, user_options):
@@ -257,24 +257,50 @@ class OutpostSpawner(ForwardBaseSpawner):
                     return "http://outpost.namespace.svc:8080/services/"
                 else:
                     return "https://remote-outpost.com/services/"
-            
+
             c.OutpostSpawner.request_url = request_url
         """,
     ).tag(config=True)
 
-    start_async = Bool(
+    start_async = Union(
+        [Bool(), Callable()],
         default_value=False,
         help="""
         Whether the start at the Outpost service should run in the background or not.
+        Can be a boolean or a function.
+
+        May be a coroutine.
         """,
     ).tag(config=True)
 
-    stop_async = Bool(
+    async def get_start_async(self):
+        if callable(self.start_async):
+            ret = self.start_async(self)
+            if inspect.isawaitable(ret):
+                ret = await ret
+            return ret
+        else:
+            return self.start_async
+
+    stop_async = Union(
+        [Bool(), Callable()],
         default_value=False,
         help="""
         Whether the stop at the Outpost service should run in the background or not.
+        Can be a boolean or a function.
+
+        May be a coroutine.
         """,
     ).tag(config=True)
+
+    async def get_stop_async(self):
+        if callable(self.stop_async):
+            ret = self.stop_async(self)
+            if inspect.isawaitable(ret):
+                ret = await ret
+            return ret
+        else:
+            return self.stop_async
 
     request_headers = Union(
         [Dict(), Callable()],
@@ -282,7 +308,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         An optional hook function, or dict, you can implement to define
         the header used for all requests sent to the JupyterHub Outpost service.
         They are forwarded directly to the tornado.httpclient.HTTPRequest object.
-                
+
         Example::
 
             def request_headers(spawner, user_options):
@@ -295,7 +321,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                     "Accept": "application/json",
                     "Authorization": f"Basic {auth}"
                 }
-            
+
             c.OutpostSpawner.request_headers = request_headers
         """,
     ).tag(config=True)
@@ -322,7 +348,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         They are directly forwarded to the tornado.httpclient.HTTPRequest object.
         If not defined, request_kwargs will be used instead.
         Example::
-        
+
             def request_kwargs(spawner, user_options):
                 return {
                     "request_timeout": 30,
@@ -330,7 +356,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                     "ca_certs": ...,
                     "validate_cert": ...,
                 }
-                
+
             c.OutpostSpawner.request_kwargs = request_kwargs
         """,
     ).tag(config=True)
@@ -758,7 +784,8 @@ class OutpostSpawner(ForwardBaseSpawner):
         request_header = await self.get_request_headers()
         url = await self.get_request_url()
         ssh_during_startup = self.get_ssh_during_startup()
-        if self.start_async and not ssh_during_startup:
+        start_async = await self.get_start_async()
+        if start_async:
             request_header["execution-type"] = "async"
 
         req = HTTPRequest(
@@ -841,7 +868,8 @@ class OutpostSpawner(ForwardBaseSpawner):
     async def _stop(self, now=False, cancel=False, event=None, **kwargs):
         url = await self.get_request_url(attach_name=True)
         headers = await self.get_request_headers()
-        if self.stop_async:
+        stop_async = await self.get_stop_async()
+        if stop_async:
             headers["execution-type"] = "async"
         req = HTTPRequest(
             url=url,
@@ -859,3 +887,4 @@ class OutpostSpawner(ForwardBaseSpawner):
                 Path(self.cert_paths["certfile"]).parent.rmdir()
             except:
                 pass
+
