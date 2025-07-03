@@ -16,14 +16,13 @@ requires-python = ">=3.9"
 license = {file = "LICENSE"}
 keywords = ["jupyterhub", "spawner", "kubernetes"]
 authors = [
-    {name = "Tim Kreuzer", email = "t.kreuzer@fz-juelich.de"},
-    {name = "Alice Grosch", email = "a.grosch@fz-juelich.de"}
+    {name = "Tim Kreuzer", email = "t.kreuzer@fz-juelich.de"}
 ]
 
 dependencies = [
     "escapism",
     "jinja2",
-    "jupyterhub>=4.0.0",
+    "jupyterhub>=5.0.0",
     "traitlets",
     "urllib3",
     "jupyterhub-forwardbasespawner",

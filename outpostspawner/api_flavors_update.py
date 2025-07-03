@@ -10,7 +10,6 @@ from jupyterhub.utils import token_authenticated
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPRequest
 
-from .misc import Thread
 
 _outpost_flavors_cache = {}
 
@@ -187,20 +186,6 @@ async def async_get_flavors(log, user=None):
                             )
                 return user_specific_ret
     return _outpost_flavors_cache
-
-
-def sync_get_flavors(log, user):
-    loop = asyncio.new_event_loop()
-
-    def t_get_flavors(loop, log, user):
-        asyncio.set_event_loop(loop)
-        ret = loop.run_until_complete(async_get_flavors(log, user))
-        return ret
-
-    t = Thread(target=t_get_flavors, args=(loop, log, user))
-    t.start()
-    ret = t.join()
-    return ret
 
 
 class OutpostFlavorsAPIHandler(APIHandler):
