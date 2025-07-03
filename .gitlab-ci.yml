@@ -17,20 +17,7 @@ pypi:
     - python -m build
     - twine upload -u __token__ -p ${PYPI_JUPYTERJSC_TOKEN} dist/*
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(\.post\d+)?$/'
-
-testpypi:
-  stage: release
-  image:
-    name: python:alpine
-  before_script:
-    - pip install twine build
-  script:
-    - python -m build
-    - twine upload --repository testpypi -u __token__ -p ${TESTPYPI_JUPYTERJSC_TOKEN} dist/*
-  rules:
-    - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+(\.post\d+)?$/'
-
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+((a|b|rc)\d+|\.post\d+)?$/'
 
 ###
 #
