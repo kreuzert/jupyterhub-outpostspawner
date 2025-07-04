@@ -865,7 +865,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         return ret
 
-    async def _stop(self, now=False, event=None, **kwargs):
+    async def _stop(self, **kwargs):
         url = await self.get_request_url(attach_name=True)
         headers = await self.get_request_headers()
         stop_async = await self.get_stop_async()
