@@ -636,16 +636,19 @@ class OutpostSpawner(ForwardBaseSpawner):
 
     @default("http_client")
     def _default_http_client(self):
-        """Configure tornado to use pycurl by default, if available"""
-        # use pycurl by default, if available:
+        # use pycurl, if available:
         try:
-            AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+            from tornado.curl_httpclient import CurlAsyncHTTPClient
+
+            return CurlAsyncHTTPClient(defaults=dict(validate_cert=False))
         except ImportError as e:
             self.log.debug(
                 "Could not load pycurl: %s\npycurl is recommended if you have a large number of users.",
                 e,
             )
-        return AsyncHTTPClient(force_instance=True, defaults=dict(validate_cert=False))
+            return AsyncHTTPClient(
+                force_instance=True, defaults=dict(validate_cert=False)
+            )
 
     async def fetch(self, req, action):
         """Wrapper for tornado.httpclient.AsyncHTTPClient.fetch
