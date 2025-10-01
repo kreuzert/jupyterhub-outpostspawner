@@ -112,19 +112,22 @@ async def async_get_flavors(log, user=None):
                 urls_tokens = list(
                     zip(initial_system_urls_list, initial_system_tokens_list)
                 )
-                # use pycurl by default, if available:
+                # use pycurl, if available:
+                http_client = None
                 try:
-                    AsyncHTTPClient.configure(
-                        "tornado.curl_httpclient.CurlAsyncHTTPClient"
+                    from tornado.curl_httpclient import CurlAsyncHTTPClient
+
+                    http_client = CurlAsyncHTTPClient(
+                        defaults=dict(validate_cert=False)
                     )
                 except ImportError as e:
                     log.debug(
                         "Could not load pycurl: %s\npycurl is recommended if you have a large number of users.",
                         e,
                     )
-                http_client = AsyncHTTPClient(
-                    force_instance=True, defaults=dict(validate_cert=False)
-                )
+                    http_client = AsyncHTTPClient(
+                        force_instance=True, defaults=dict(validate_cert=False)
+                    )
                 tasks = []
                 for url_token in urls_tokens:
                     req = HTTPRequest(
