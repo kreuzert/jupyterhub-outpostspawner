@@ -339,6 +339,87 @@ class OutpostSpawner(ForwardBaseSpawner):
             request_kwargs = self.request_kwargs
         return request_kwargs
 
+    additional_cafile = Any(
+        default_value=None,
+        config=True,
+        help="""
+        Additional certificate authorities can be added. Required if
+        JUPYTERHUB_API_URL is an external URL and
+        c.JupyterHub.internal_ssl is True.
+        """,
+    )
+
+    ssl_alt_names = Any(
+        default_value=[],
+        config=True,
+        help="""List of SSL alt names
+
+        May be set in config if all spawners should have the same value(s),
+        or set at runtime by Spawner that know their names.
+        """,
+    )
+
+    async def create_certs(self):
+        """Create and set ownership for the certs to be used for internal ssl
+
+        Keyword Arguments:
+            alt_names (list): a list of alternative names to identify the
+            server by, see:
+            https://en.wikipedia.org/wiki/Subject_Alternative_Name
+
+            override: override the default_names with the provided alt_names
+
+        Returns:
+            dict: Path to cert files and CA
+
+        This method creates certs for use with the singleuser notebook. It
+        enables SSL and ensures that the notebook can perform bi-directional
+        SSL auth with the hub (verification based on CA).
+
+        If the singleuser host has a name or ip other than localhost,
+        an appropriate alternative name(s) must be passed for ssl verification
+        by the hub to work. For example, for Jupyter hosts with an IP of
+        10.10.10.10 or DNS name of jupyter.example.com, this would be:
+
+        alt_names=["IP:10.10.10.10"]
+        alt_names=["DNS:jupyter.example.com"]
+
+        respectively. The list can contain both the IP and DNS names to refer
+        to the host by either IP or DNS name (note the `default_names` below).
+        """
+        from certipy import Certipy
+
+        default_names = ["DNS:localhost", "IP:127.0.0.1"]
+        alt_names = []
+
+        ssl_alt_names = self.ssl_alt_names
+        if callable(ssl_alt_names):
+            ssl_alt_names = ssl_alt_names(self)
+            if inspect.isawaitable(ssl_alt_names):
+                ssl_alt_names = await ssl_alt_names
+        alt_names.extend(ssl_alt_names)
+
+        if self.ssl_alt_names_include_local:
+            alt_names = default_names + alt_names
+
+        self.log.info("Creating certs for %s: %s", self._log_name, ";".join(alt_names))
+
+        common_name = self.user.name or "service"
+        certipy = Certipy(store_dir=self.internal_certs_location)
+        notebook_component = "notebooks-ca"
+        notebook_key_pair = certipy.create_signed_pair(
+            "user-" + common_name,
+            notebook_component,
+            alt_names=alt_names,
+            overwrite=True,
+        )
+        paths = {
+            "keyfile": notebook_key_pair["files"]["key"],
+            "certfile": notebook_key_pair["files"]["cert"],
+            "cafile": self.internal_trust_bundles[notebook_component],
+        }
+        return paths
+
     request_kwargs_start = Union(
         [Dict(), Callable()],
         default_value=None,
@@ -783,6 +864,14 @@ class OutpostSpawner(ForwardBaseSpawner):
             for key, path in self.internal_trust_bundles.items():
                 with open(path, "r") as f:
                     request_body["internal_trust_bundles"][key] = f.read()
+            if self.additional_cafile:
+                cafile = self.additional_cafile
+                if callable(cafile):
+                    cafile = cafile(self)
+                    if inspect.isawaitable(cafile):
+                        cafile = await cafile
+                request_body["certs"]["cafile"] += cafile
+                request_body["internal_trust_bundles"]["hub-ca"] += cafile
 
         request_header = await self.get_request_headers()
         url = await self.get_request_url()
