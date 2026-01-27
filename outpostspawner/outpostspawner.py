@@ -24,7 +24,7 @@ from traitlets import Integer
 from traitlets import Unicode
 from traitlets import Union
 
-from .misc import get_shared_http_client
+from .misc import shared_fetch
 
 
 class OutpostSpawner(ForwardBaseSpawner):
@@ -358,23 +358,6 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         May be set in config if all spawners should have the same value(s),
         or set at runtime by Spawner that know their names.
-        """,
-    )
-
-    http_client_semaphore_limit = Integer(
-        default_value=10,
-        config=True,
-        help="""
-        Maximum number of concurrent HTTP client requests.
-        """,
-    )
-
-    http_client_defaults = Dict(
-        default_value={},
-        config=True,
-        help="""
-        Default keyword arguments for the shared HTTP client used to communicate
-        with the Outposts
         """,
     )
 
@@ -732,9 +715,22 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         return extra_labels
 
-    @property
-    def http_client(self):
-        return get_shared_http_client(self.http_client_defaults)
+    http_client_defaults = Dict(
+        default_value={},
+        config=True,
+        help="""
+        Default keyword arguments for the shared HTTP client used to communicate
+        with the Outposts
+        """,
+    )
+
+    http_client_concurrent_limit = Integer(
+        default_value=10,
+        config=True,
+        help="""
+        Maximum number of concurrent HTTP client requests.
+        """,
+    )
 
     async def fetch(self, req, action):
         """Wrapper for tornado.httpclient.AsyncHTTPClient.fetch
@@ -746,8 +742,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         """
         try:
-            async with self.http_client_semaphore:
-                resp = await self.http_client.fetch(req)
+            resp = await shared_fetch(req, self.http_client_concurrent_limit, self.http_client_defaults)
         except HTTPClientError as e:
             if e.response:
                 # Log failed response message for debugging purposes
