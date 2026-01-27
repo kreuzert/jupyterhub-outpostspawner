@@ -24,6 +24,8 @@ from traitlets import Integer
 from traitlets import Unicode
 from traitlets import Union
 
+from .misc import get_shared_http_client
+
 
 class OutpostSpawner(ForwardBaseSpawner):
     """
@@ -356,6 +358,23 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         May be set in config if all spawners should have the same value(s),
         or set at runtime by Spawner that know their names.
+        """,
+    )
+
+    http_client_semaphore_limit = Integer(
+        default_value=10,
+        config=True,
+        help="""
+        Maximum number of concurrent HTTP client requests.
+        """,
+    )
+
+    http_client_defaults = Dict(
+        default_value={},
+        config=True,
+        help="""
+        Default keyword arguments for the shared HTTP client used to communicate
+        with the Outposts
         """,
     )
 
@@ -713,23 +732,9 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         return extra_labels
 
-    http_client = Any()
-
-    @default("http_client")
-    def _default_http_client(self):
-        # use pycurl, if available:
-        try:
-            from tornado.curl_httpclient import CurlAsyncHTTPClient
-
-            return CurlAsyncHTTPClient(defaults=dict(validate_cert=False))
-        except ImportError as e:
-            self.log.debug(
-                "Could not load pycurl: %s\npycurl is recommended if you have a large number of users.",
-                e,
-            )
-            return AsyncHTTPClient(
-                force_instance=True, defaults=dict(validate_cert=False)
-            )
+    @property
+    def http_client(self):
+        return get_shared_http_client(self.http_client_defaults)
 
     async def fetch(self, req, action):
         """Wrapper for tornado.httpclient.AsyncHTTPClient.fetch
@@ -741,7 +746,8 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         """
         try:
-            resp = await self.http_client.fetch(req)
+            async with self.http_client_semaphore:
+                resp = await self.http_client.fetch(req)
         except HTTPClientError as e:
             if e.response:
                 # Log failed response message for debugging purposes
@@ -770,15 +776,20 @@ class OutpostSpawner(ForwardBaseSpawner):
                 message = str(e)
                 traceback = ""
             url = urlunparse(urlparse(req.url)._replace(query=""))
-            self.log.exception(
-                f"{self._log_name} - Communication with outpost failed: {e.code} {req.method} {url}: {message}.\nOutpost traceback:\n{traceback}",
-                extra={
-                    "uuidcode": self.name,
-                    "log_name": self._log_name,
-                    "user": self.user.name,
-                    "action": action,
-                },
-            )
+            if getattr(e, "code", 0) == 404 and action == "stop":
+                # Stopping a non-existing service is not an error.
+                return None
+            if getattr(e, "code", 0) != 404:
+                # 404 is not worth an exception log message - It's gone and that's fine
+                self.log.exception(
+                    f"{self._log_name} - Communication with outpost failed: {e.code} {req.method} {url}: {message}.\nOutpost traceback:\n{traceback}",
+                    extra={
+                        "uuidcode": self.name,
+                        "log_name": self._log_name,
+                        "user": self.user.name,
+                        "action": action,
+                    },
+                )
             raise web.HTTPError(
                 419,
                 log_message=f"{action} request to {req.url} failed: {e.code}",
@@ -801,6 +812,7 @@ class OutpostSpawner(ForwardBaseSpawner):
           dict or None
         """
         tic = time.monotonic()
+        resp = None
         try:
             resp = await self.fetch(req, action)
         except Exception as tic_e:
@@ -819,6 +831,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                     "log_name": self._log_name,
                     "user": self.user.name,
                     "duration": toc,
+                    "resp": resp,
                 },
             )
 
@@ -949,7 +962,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                     ret = None
             elif self.request_failed_poll_keep_running:
                 ret = None
-            self.log.exception(
+            self.log.warning(
                 f"{self._log_name} - Could not poll current status - Return {ret}"
             )
         else:

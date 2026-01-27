@@ -1,20 +1,17 @@
-import sys
-import threading
+_shared_http_client = None
 
 
-class Thread(threading.Thread):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.result = None
-
-    def run(self):
-        if self._target is None:
-            return
+def get_shared_http_client(http_client_defaults={}):
+    global _shared_http_client
+    if _shared_http_client is None:
         try:
-            self.result = self._target(*self._args, **self._kwargs)
-        except Exception as exc:
-            print(f"{type(exc).__name__}: {exc}", file=sys.stderr)
+            from tornado.curl_httpclient import CurlAsyncHTTPClient
 
-    def join(self, *args, **kwargs):
-        super().join(*args, **kwargs)
-        return self.result
+            _shared_http_client = CurlAsyncHTTPClient(defaults=http_client_defaults)
+        except ImportError:
+            from tornado.httpclient import AsyncHTTPClient
+
+            _shared_http_client = AsyncHTTPClient(
+                force_instance=True, defaults=http_client_defaults
+            )
+    return _shared_http_client
