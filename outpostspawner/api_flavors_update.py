@@ -7,9 +7,9 @@ from forwardbasespawner.utils import check_custom_scopes
 from jupyterhub.apihandlers import APIHandler
 from jupyterhub.apihandlers import default_handlers
 from jupyterhub.utils import token_authenticated
-from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPRequest
 
+from .misc import shared_fetch
 
 _outpost_flavors_cache = {}
 
@@ -30,9 +30,6 @@ async def get_user_specific_flavors(log, user_specific_flavor_systems={}):
 
     ret = _outpost_flavors_cache
     tasks = []
-    http_client = AsyncHTTPClient(
-        force_instance=True, defaults=dict(validate_cert=False)
-    )
     system_names = []
     for system_name, system_infos in user_specific_flavor_systems.items():
         url = system_infos.get("url", "No Url configured")
@@ -50,7 +47,7 @@ async def get_user_specific_flavors(log, user_specific_flavor_systems={}):
             body=json.dumps(body),
             **request_kwargs,
         )
-        tasks.append(http_client.fetch(req, raise_error=False))
+        tasks.append(shared_fetch(req, raise_error=False))
         system_names.append(system_name)
     try:
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -112,22 +109,6 @@ async def async_get_flavors(log, user=None):
                 urls_tokens = list(
                     zip(initial_system_urls_list, initial_system_tokens_list)
                 )
-                # use pycurl, if available:
-                http_client = None
-                try:
-                    from tornado.curl_httpclient import CurlAsyncHTTPClient
-
-                    http_client = CurlAsyncHTTPClient(
-                        defaults=dict(validate_cert=False)
-                    )
-                except ImportError as e:
-                    log.debug(
-                        "Could not load pycurl: %s\npycurl is recommended if you have a large number of users.",
-                        e,
-                    )
-                    http_client = AsyncHTTPClient(
-                        force_instance=True, defaults=dict(validate_cert=False)
-                    )
                 tasks = []
                 for url_token in urls_tokens:
                     req = HTTPRequest(
@@ -135,7 +116,7 @@ async def async_get_flavors(log, user=None):
                         headers={"Authorization": f"Basic {url_token[1]}"},
                         request_timeout=1,
                     )
-                    tasks.append(http_client.fetch(req, raise_error=False))
+                    tasks.append(shared_fetch(req, raise_error=False))
                 try:
                     results = await asyncio.gather(*tasks, return_exceptions=True)
                     names_results = list(zip(initial_system_names_list, results))

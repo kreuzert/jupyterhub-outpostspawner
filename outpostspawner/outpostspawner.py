@@ -724,14 +724,6 @@ class OutpostSpawner(ForwardBaseSpawner):
         """,
     )
 
-    http_client_concurrent_limit = Integer(
-        default_value=10,
-        config=True,
-        help="""
-        Maximum number of concurrent HTTP client requests.
-        """,
-    )
-
     async def fetch(self, req, action):
         """Wrapper for tornado.httpclient.AsyncHTTPClient.fetch
 
@@ -742,7 +734,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         """
         try:
-            resp = await shared_fetch(req, self.http_client_concurrent_limit, self.http_client_defaults)
+            resp = await shared_fetch(req, self.http_client_defaults)
         except HTTPClientError as e:
             if e.response:
                 # Log failed response message for debugging purposes
