@@ -267,8 +267,17 @@ class JobAPIHandler(APIHandler):
                     await _full_stop()
 
             spawner._job_prepare_status = "preparing"
-            await self.run_job_prepare(config, self.request, spawner)
-            await _spawn()
+            try:
+                await self.run_job_prepare(config, self.request, spawner)
+            except Exception as e:
+                self.log.error(f"{spawner._log_name} - Error in job preparation: {e}")
+                spawner._job_prepare_status = "stopped"
+                if not spawner.logs:
+                    spawner.logs = [f"Error in job preparation: {e}"]
+                if spawner.exit_code is None or spawner.exit_code == 0:
+                    spawner.exit_code = -1
+            else:
+                await _spawn()
 
         spawner.log.info(
             f"{spawner._log_name} - Job start",
