@@ -258,14 +258,17 @@ class JobAPIHandler(APIHandler):
                     await user.spawn(server_name)
                 except Exception as e:
                     self.log.error(f"{spawner._log_name} - Error spawning job: {e}")
+                    spawner.logs = [f"Error spawning job: {e}"]
+                    spawner.exit_code = -1
+                    spawner._job_prepare_status = "stopped"
                 else:
+                    spawner._job_prepare_status = None
                     await asyncio.sleep(config.job_timeout)
                     await _full_stop()
 
             spawner._job_prepare_status = "preparing"
             await self.run_job_prepare(config, self.request, spawner)
             await _spawn()
-            spawner._job_prepare_status = None
 
         spawner.log.info(
             f"{spawner._log_name} - Job start",
