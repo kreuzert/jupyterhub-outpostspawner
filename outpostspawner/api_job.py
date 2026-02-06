@@ -242,7 +242,10 @@ class JobAPIHandler(APIHandler):
             async def _full_stop():
                 if server_name in user.spawners:
                     if spawner.active:
-                        self.log.info(f"{spawner._log_name} - Stopping job")
+                        spawner.log.info(
+                            f"{spawner._log_name} - Job stop",
+                            extra={"action": "job_stop"},
+                        )
                         spawner.stop_polling()
                         await user.stop(server_name)
                     if spawner.orm_spawner is not None:
@@ -264,6 +267,14 @@ class JobAPIHandler(APIHandler):
             await _spawn()
             spawner._job_prepare_status = None
 
+        spawner.log.info(
+            f"{spawner._log_name} - Job start",
+            extra={
+                "action": "job_start",
+                "user_options": user_options,
+                "notebook_dirs": notebook_dirs,
+            },
+        )
         task = asyncio.create_task(spawn_and_cleanup())
         task_references.add(task)
         task.add_done_callback(task_references.discard)
@@ -308,7 +319,9 @@ class JobAPIHandler(APIHandler):
 
         async def _remove_spawner():
             if spawner.active:
-                self.log.info(f"{spawner._log_name} - Stopping job")
+                spawner.log.info(
+                    f"{spawner._log_name} - Job stop", extra={"action": "job_stop"}
+                )
                 spawner.stop_polling()
                 await user.stop(server_name)
             await user._delete_spawner(spawner)
@@ -347,6 +360,10 @@ class JobAPIHandler(APIHandler):
                 task = asyncio.create_task(_remove_spawner())
                 task_references.add(task)
                 task.add_done_callback(task_references.discard)
+        spawner.log.debug(
+            f"{spawner._log_name} - Job poll",
+            extra={"action": "job_poll", "status": status, "exit_code": exit_code},
+        )
         self.write(
             {
                 "status": status,
