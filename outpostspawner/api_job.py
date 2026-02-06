@@ -16,6 +16,12 @@ from .misc import generate_random_id
 
 
 class JobAPIHandlerConfig(Configurable):
+    poll_interval = Integer(
+        default_value=10,
+        config=True,
+        help="Interval (in seconds) at which to poll the job status and logs",
+    )
+
     job_timeout = Integer(
         default_value=3600,
         config=True,
@@ -234,7 +240,7 @@ class JobAPIHandler(APIHandler):
         spawner.collect_logs_polling = True
         spawner.user_options = user_options
         spawner.orm_spawner.user_options = user_options
-        spawner.custom_poll_interval = 3
+        spawner.custom_poll_interval = config.poll_interval
         self.db.add(spawner.orm_spawner)
         self.db.commit()
 
