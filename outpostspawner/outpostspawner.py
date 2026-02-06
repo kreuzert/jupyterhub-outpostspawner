@@ -11,9 +11,9 @@ from urllib.parse import urlunparse
 from forwardbasespawner import ForwardBaseSpawner
 from jupyterhub.utils import maybe_future
 from tornado import web
-from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPClientError
 from tornado.httpclient import HTTPRequest
+from tornado.httputil import url_concat
 from tornado.ioloop import PeriodicCallback
 from traitlets import Any
 from traitlets import Bool
@@ -459,6 +459,40 @@ class OutpostSpawner(ForwardBaseSpawner):
             request_kwargs_start = self.get_request_kwargs()
         return request_kwargs_start
 
+    collect_logs = Bool(
+        default_value=False,
+        config=True,
+        help="""
+        Whether to collect logs when stopping the service.
+        """,
+    )
+    collect_logs_polling = Bool(
+        default_value=False,
+        config=True,
+        help="""
+        Whether to collect logs when polling the service.
+        """,
+    )
+    _job_prepare_status = None
+    exit_code = None
+    logs = []
+
+    def get_state(self):
+        """get the current state"""
+        state = super().get_state()
+        state["exitCode"] = self.exit_code
+        state["logs"] = self.logs
+        return state
+
+    def load_state(self, state):
+        """load state from the database"""
+        super().load_state(state)
+        if "logs" in state:
+            self.logs = state["logs"]
+        if "exitCode" in state:
+            self.exit_code = state["exitCode"]
+        
+
     @property
     def poll_interval(self):
         """Get poll interval.
@@ -509,12 +543,12 @@ class OutpostSpawner(ForwardBaseSpawner):
             raise Exception("Server is in the process of stopping, please wait.")
 
         ret = super().run_pre_spawn_hook()
-
+        
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         start_pre_msg = "Sending request to Outpost service to start your service."
         start_event = {
             "failed": False,
-            "progress": 10,
+            "progress": 20,
             "html_message": f"<details><summary>{now}: {start_pre_msg}</summary>\
                 &nbsp;&nbsp;Start {self.name}<br>&nbsp;&nbsp;Options:<br><pre>{json.dumps(self.user_options, indent=2)}</pre></details>",
         }
@@ -811,7 +845,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             return resp
         finally:
             toc = str(time.monotonic() - tic)
-            self.log.info(
+            self.log.debug(
                 f"{self._log_name} - Communicated {action} with Outpost service ( {req.url} ) (request duration: {toc})",
                 extra={
                     "uuidcode": self.name,
@@ -831,6 +865,8 @@ class OutpostSpawner(ForwardBaseSpawner):
                 "user": self.user.name,
             },
         )
+        self.logs = []
+        self.exit_code = None
         await self.run_check_allowed()
         env = await self.get_custom_env()
         user_options = await self.get_custom_user_options()
@@ -874,8 +910,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 request_body["internal_trust_bundles"]["hub-ca"] += cafile
 
         request_header = await self.get_request_headers()
-        url = await self.get_request_url()
-        ssh_during_startup = self.get_ssh_during_startup()
+        url = await self.get_request_url()        
         start_async = await self.get_start_async()
         if start_async:
             request_header["execution-type"] = "async"
@@ -929,6 +964,10 @@ class OutpostSpawner(ForwardBaseSpawner):
     async def _poll(self):
         url = await self.get_request_url(attach_name=True)
         headers = await self.get_request_headers()
+        
+        if self.collect_logs_polling:
+            url = url_concat(url, {"collect_logs": "true"})
+        
         req = HTTPRequest(
             url=url,
             method="GET",
@@ -954,15 +993,23 @@ class OutpostSpawner(ForwardBaseSpawner):
             )
         else:
             ret = resp_json.get("status", None)
+            if self.collect_logs_polling:
+                self.logs = resp_json.get("logs", [])
 
+        if ret is not None:
+            self.exit_code = ret
         return ret
 
     async def _stop(self, **kwargs):
+        if self.exit_code is None:
+            self.exit_code = 0
         url = await self.get_request_url(attach_name=True)
         headers = await self.get_request_headers()
         stop_async = await self.get_stop_async()
         if stop_async:
             headers["execution-type"] = "async"
+        if self.collect_logs or kwargs.get("collect_logs", False):
+            url = url_concat(url, {"collect_logs": "true"})
         req = HTTPRequest(
             url=url,
             method="DELETE",
@@ -970,7 +1017,12 @@ class OutpostSpawner(ForwardBaseSpawner):
             **self.get_request_kwargs(),
         )
 
-        await self.send_request(req, action="stop", raise_exception=False)
+        result = await self.send_request(req, action="stop", raise_exception=False)
+        if result and (self.collect_logs or kwargs.get("collect_logs", False)):
+            try:
+                self.logs = result.get("logs", [])
+            except:
+                pass
 
         if self.cert_paths:
             Path(self.cert_paths["keyfile"]).unlink(missing_ok=True)

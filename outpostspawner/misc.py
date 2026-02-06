@@ -1,5 +1,7 @@
 import asyncio
 import os
+import random
+import string
 
 _shared_http_client = None
 _shared_semaphore = None
@@ -31,3 +33,15 @@ async def shared_fetch(req, http_client_defaults={}, raise_error=True):
     semaphore = _get_shared_semaphore()
     async with semaphore:
         return await _get_shared_http_client(http_client_defaults).fetch(req, raise_error=raise_error)
+
+def generate_random_id():
+    chars = string.ascii_lowercase
+    all_chars = string.ascii_lowercase + string.digits
+
+    # Start with a random lowercase letter
+    result = random.choice(chars)
+
+    # Add 31 more characters from lowercase letters and numbers
+    result += "".join(random.choice(all_chars) for _ in range(31))
+
+    return result

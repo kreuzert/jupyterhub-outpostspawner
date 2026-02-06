@@ -26,7 +26,8 @@ dependencies = [
     "traitlets",
     "urllib3",
     "jupyterhub-forwardbasespawner>=2.0.0",
-    "kubernetes"
+    "kubernetes",
+    "sseclient-py"
 ]
 dynamic = ["version"]
 
