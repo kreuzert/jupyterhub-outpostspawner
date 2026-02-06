@@ -491,7 +491,6 @@ class OutpostSpawner(ForwardBaseSpawner):
             self.logs = state["logs"]
         if "exitCode" in state:
             self.exit_code = state["exitCode"]
-        
 
     @property
     def poll_interval(self):
@@ -543,7 +542,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             raise Exception("Server is in the process of stopping, please wait.")
 
         ret = super().run_pre_spawn_hook()
-        
+
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         start_pre_msg = "Sending request to Outpost service to start your service."
         start_event = {
@@ -910,7 +909,7 @@ class OutpostSpawner(ForwardBaseSpawner):
                 request_body["internal_trust_bundles"]["hub-ca"] += cafile
 
         request_header = await self.get_request_headers()
-        url = await self.get_request_url()        
+        url = await self.get_request_url()
         start_async = await self.get_start_async()
         if start_async:
             request_header["execution-type"] = "async"
@@ -964,10 +963,10 @@ class OutpostSpawner(ForwardBaseSpawner):
     async def _poll(self):
         url = await self.get_request_url(attach_name=True)
         headers = await self.get_request_headers()
-        
+
         if self.collect_logs_polling:
             url = url_concat(url, {"collect_logs": "true"})
-        
+
         req = HTTPRequest(
             url=url,
             method="GET",

@@ -7,10 +7,12 @@ from jupyterhub.apihandlers import default_handlers
 from jupyterhub.scopes import needs_scope
 from jupyterhub.utils import url_path_join
 from tornado import web
+from traitlets import Callable
+from traitlets import Dict
+from traitlets import Integer
+from traitlets.config import Configurable
 
 from .misc import generate_random_id
-from traitlets.config import Configurable
-from traitlets import Callable, Dict, Integer
 
 
 class JobAPIHandlerConfig(Configurable):
@@ -34,7 +36,7 @@ class JobAPIHandlerConfig(Configurable):
         """,
     )
 
-    def get_script(self, notebook_dirs=[]):        
+    def get_script(self, notebook_dirs=[]):
         script = r"""
 set -euo pipefail
 
@@ -163,6 +165,7 @@ echo "Papermill Job completed"
 
 task_references = set()
 
+
 class JobAPIHandler(APIHandler):
     def merge_user_options(self, user_options, default_options):
         for key, value in default_options.items():
@@ -190,10 +193,8 @@ class JobAPIHandler(APIHandler):
                 400,
                 reason="User already has a running server, and named servers are not allowed.",
             )
-        
-        named_server_limit_per_user = (
-            await self.get_current_user_named_server_limit()
-        )
+
+        named_server_limit_per_user = await self.get_current_user_named_server_limit()
 
         if named_server_limit_per_user > 0:
             named_spawners = list(user.all_spawners(include_default=False))
@@ -212,24 +213,23 @@ class JobAPIHandler(APIHandler):
         notebook_dirs = body.get("notebook_dirs", [])
 
         config = JobAPIHandlerConfig(config=self.config)
-        user_options = self.merge_user_options(user_options, config.default_user_options)
+        user_options = self.merge_user_options(
+            user_options, config.default_user_options
+        )
         if "option" not in user_options:
             raise web.HTTPError(400, reason="Missing 'option' in user_options")
         user_options["profile"] = user_options["option"]
 
         server_name = generate_random_id()
-        
+
         spawner = user.get_spawner(server_name, replace_failed=True)
         script = config.get_script(notebook_dirs=notebook_dirs)
-        
-        job_custom_misc ={
-            "cmd": ["/bin/bash", "-lc"],
-            "args": script
-        }
+
+        job_custom_misc = {"cmd": ["/bin/bash", "-lc"], "args": script}
         spawner_custom_misc = spawner.custom_misc or {}
         spawner_custom_misc.update(job_custom_misc)
         spawner.custom_misc = spawner_custom_misc
-        
+
         spawner.collect_logs = True
         spawner.collect_logs_polling = True
         spawner.user_options = user_options
@@ -237,7 +237,7 @@ class JobAPIHandler(APIHandler):
         spawner.custom_poll_interval = 3
         self.db.add(spawner.orm_spawner)
         self.db.commit()
-        
+
         async def spawn_and_cleanup():
             async def _full_stop():
                 if server_name in user.spawners:
@@ -249,6 +249,7 @@ class JobAPIHandler(APIHandler):
                         self.db.delete(spawner.orm_spawner)
                     user.spawners.pop(server_name, None)
                     self.db.commit()
+
             async def _spawn():
                 try:
                     await user.spawn(server_name)
@@ -257,6 +258,7 @@ class JobAPIHandler(APIHandler):
                 else:
                     await asyncio.sleep(config.job_timeout)
                     await _full_stop()
+
             spawner._job_prepare_status = "preparing"
             await self.run_job_prepare(config, self.request, spawner)
             await _spawn()
@@ -265,7 +267,13 @@ class JobAPIHandler(APIHandler):
         task = asyncio.create_task(spawn_and_cleanup())
         task_references.add(task)
         task.add_done_callback(task_references.discard)
-        ret = url_path_join(f"{self.request.protocol}://{self.request.host}", self.hub.base_url, "api/job", user.name, server_name)
+        ret = url_path_join(
+            f"{self.request.protocol}://{self.request.host}",
+            self.hub.base_url,
+            "api/job",
+            user.name,
+            server_name,
+        )
         self.write(ret)
         self.set_header("Location", ret)
         self.set_status(201)
@@ -315,25 +323,39 @@ class JobAPIHandler(APIHandler):
         if not spawner.active and spawner._job_prepare_status is not None:
             status = spawner._job_prepare_status
         else:
-            status = "stopped" if not spawner.active else "running" if spawner.ready else "spawning"
+            status = (
+                "stopped"
+                if not spawner.active
+                else "running"
+                if spawner.ready
+                else "spawning"
+            )
         if status == "running" or status == "stopped":
             logs = spawner.logs
             exit_code = spawner.exit_code
-        if len(logs) > 0 and logs[-1] == "Papermill Job completed":            
+        if len(logs) > 0 and logs[-1] == "Papermill Job completed":
             logs = self.reduce_logs(logs)
             status = "stopped"
             exit_code = 0
         if status == "stopped":
-            if self.request.query_arguments.get("delete", [b"true"])[0].decode().lower() == "true":
+            if (
+                self.request.query_arguments.get("delete", [b"true"])[0]
+                .decode()
+                .lower()
+                == "true"
+            ):
                 task = asyncio.create_task(_remove_spawner())
                 task_references.add(task)
                 task.add_done_callback(task_references.discard)
-        self.write({
-            "status": status,
-            "logs": logs,
-            "exit_code": exit_code,
-        })
+        self.write(
+            {
+                "status": status,
+                "logs": logs,
+                "exit_code": exit_code,
+            }
+        )
         self.set_status(200)
+
 
 default_handlers.append((r"/api/job", JobAPIHandler))
 default_handlers.append((r"/api/job/([^/]+)", JobAPIHandler))
