@@ -227,7 +227,7 @@ class JobAPIHandler(APIHandler):
                 ):
                     running_jobs += 1
 
-        if running_jobs >= self.config.job_server_limit_per_user:
+        if running_jobs >= config.job_server_limit_per_user:
             raise web.HTTPError(
                 400,
                 f"User {user.name} already has the maximum of {config.job_server_limit_per_user} running jobs."
