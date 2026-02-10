@@ -474,6 +474,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         """,
     )
     _job_prepare_status = None
+    _is_job = False
     exit_code = None
     logs = []
 
@@ -482,6 +483,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         state = super().get_state()
         state["exitCode"] = self.exit_code
         state["logs"] = self.logs
+        state["_is_job"] = self._is_job
         return state
 
     def load_state(self, state):
@@ -491,6 +493,8 @@ class OutpostSpawner(ForwardBaseSpawner):
             self.logs = state["logs"]
         if "exitCode" in state:
             self.exit_code = state["exitCode"]
+        if "_is_job" in state:
+            self._is_job = state["_is_job"]
 
     @property
     def poll_interval(self):

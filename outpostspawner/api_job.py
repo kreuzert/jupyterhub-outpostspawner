@@ -16,6 +16,12 @@ from .misc import generate_random_id
 
 
 class JobAPIHandlerConfig(Configurable):
+    job_server_limit_per_user = Integer(
+        default_value=10,
+        config=True,
+        help="Maximum number of job servers allowed per user at the same time.",
+    )
+
     poll_interval = Integer(
         default_value=10,
         config=True,
@@ -211,6 +217,22 @@ class JobAPIHandler(APIHandler):
                     "  One must be deleted before a new server can be created",
                 )
 
+        config = JobAPIHandlerConfig(config=self.config)
+        running_jobs = 0
+        for spawner in user.all_spawners():
+            if getattr(spawner, "_is_job", False):
+                if (
+                    spawner.active
+                    or getattr(spawner, "_job_prepare_status", None) is not None
+                ):
+                    running_jobs += 1
+
+        if running_jobs >= self.config.job_server_limit_per_user:
+            raise web.HTTPError(
+                400,
+                f"User {user.name} already has the maximum of {config.job_server_limit_per_user} running jobs."
+                " One must be completed before a new job can be started",
+            )
         try:
             body = json.loads(self.request.body)
         except json.JSONDecodeError:
@@ -218,7 +240,6 @@ class JobAPIHandler(APIHandler):
         user_options = body.get("user_options", {})
         notebook_dirs = body.get("notebook_dirs", [])
 
-        config = JobAPIHandlerConfig(config=self.config)
         user_options = self.merge_user_options(
             user_options, config.default_user_options
         )
@@ -238,6 +259,7 @@ class JobAPIHandler(APIHandler):
 
         spawner.collect_logs = True
         spawner.collect_logs_polling = True
+        spawner._is_job = True
         spawner.user_options = user_options
         spawner.orm_spawner.user_options = user_options
         spawner.custom_poll_interval = config.poll_interval
