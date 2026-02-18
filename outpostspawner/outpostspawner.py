@@ -406,7 +406,7 @@ class OutpostSpawner(ForwardBaseSpawner):
 
         self.log.info("Creating certs for %s: %s", self._log_name, ";".join(alt_names))
 
-        common_name = self.user.name or "service"
+        common_name = str(self.user.id) or "service"
         certipy = Certipy(store_dir=self.internal_certs_location)
         notebook_component = "notebooks-ca"
         notebook_key_pair = certipy.create_signed_pair(
