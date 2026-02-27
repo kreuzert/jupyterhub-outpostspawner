@@ -981,16 +981,31 @@ class OutpostSpawner(ForwardBaseSpawner):
         try:
             resp_json = await self.send_request(req, action="poll")
         except Exception as e:
-            ret = 0
+            if self.request_failed_poll_keep_running:
+                self.log.warning(
+                    f"{self._log_name} - Could not poll current status, but configured to keep running - Exception: {e}"
+                )
+                ret = None
+            else:
+                self.log.warning(
+                    f"{self._log_name} - Could not poll current status - Exception: {e}"
+                )
+                ret = 0
             if (
                 type(e).__name__ == "HTTPError"
                 and getattr(e, "status_code", 500) == 419
                 and getattr(e, "log_message", "500").endswith("404")
             ):
                 if self.request_404_poll_keep_running:
+                    self.log.warning(
+                        f"{self._log_name} - Received 404 when polling current status, but configured to keep running - Exception: {e}"
+                    )
                     ret = None
-            elif self.request_failed_poll_keep_running:
-                ret = None
+                else:
+                    self.log.warning(
+                        f"{self._log_name} - Received 404 when polling current status - Exception: {e}"
+                    )
+                    ret = 0
             self.log.warning(
                 f"{self._log_name} - Could not poll current status - Return {ret}"
             )
