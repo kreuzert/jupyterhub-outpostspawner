@@ -115,10 +115,10 @@ if type(notebook_dirs) == str:
     notebook_dirs = [notebook_dirs]
 
 seen = set()
-
+EXCLUDED_DIRS = {".ipynb_checkpoints", ".local"}
 for dir_str in notebook_dirs:
-    dir = pathlib.Path(dir_str)
-    base = dir.resolve()
+    base_path = pathlib.Path(dir_str)
+    base = base_path.resolve()
     if not base.exists() or not base.is_dir():
         results.append({
             "notebook": dir_str,
@@ -128,8 +128,8 @@ for dir_str in notebook_dirs:
         global_exit = 1
         continue
     for nb in sorted(
-        p for p in dir.rglob("*.ipynb")
-        if ".ipynb_checkpoints" not in p.parts
+        p for p in base_path.rglob("*.ipynb")
+        if not any(part in EXCLUDED_DIRS for part in p.parts)
     ):
         try:
             nb_resolved = nb.resolve()
