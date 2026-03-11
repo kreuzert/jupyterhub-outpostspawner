@@ -552,6 +552,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         start_event = {
             "failed": False,
             "progress": 20,
+            "message": start_pre_msg,
             "html_message": f"<details><summary>{now}: {start_pre_msg}</summary>\
                 &nbsp;&nbsp;Start {self.name}<br>&nbsp;&nbsp;Options:<br><pre>{json.dumps(self.user_options, indent=2)}</pre></details>",
         }
@@ -571,6 +572,7 @@ class OutpostSpawner(ForwardBaseSpawner):
         event = {
             "progress": 99,
             "failed": False,
+            "message": f"Start failed: {str(exception)}. Deleting related resources...",
             "html_message": f"<details><summary>{now}: JupyterLab start failed. Deleting related resources...</summary>This may take a few seconds.</details>",
         }
         self.events.append(event)
@@ -600,6 +602,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             event = {
                 "progress": 100,
                 "failed": True,
+                "message": f"Start failed: {summary}. All related resources have been deleted.",
                 "html_message": f"<details><summary>{now}: {summary}</summary>{details}</details>",
             }
             return event
@@ -624,6 +627,7 @@ class OutpostSpawner(ForwardBaseSpawner):
             "failed": False,
             "ready": False,
             "progress": progress,
+            "message": "Outpost communication successful. Waiting for the service to start...",
             "html_message": f"<details><summary>{now}: Outpost communication successful.</summary>You will receive further information about the service status from the service itself.</details>",
         }
         self.events.append(submitted_event)
