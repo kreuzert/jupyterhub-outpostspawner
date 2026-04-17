@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import inspect
 import json
 
@@ -100,7 +101,7 @@ done
 
 echo ""
 echo "Papermill Job started"
-python3 - <<EOF
+python3 -u - <<EOF
 import json, subprocess, pathlib, sys, tempfile, os
 
 home_env = os.environ.get("HOME", "/home/jovyan")
@@ -138,6 +139,7 @@ for dir_str in notebook_dirs:
             seen.add(nb_resolved)
             
             out_nb = pathlib.Path(tempfile.mkdtemp()) / nb.name
+            print(f"Executing notebook {nb}...")
             proc = subprocess.run(
                 [papermill, str(nb), str(out_nb)],
                 capture_output=True,
@@ -206,10 +208,78 @@ class JobAPIHandler(APIHandler):
                 reason="User already has a running server, and named servers are not allowed.",
             )
 
+        config = JobAPIHandlerConfig(config=self.config)
         named_server_limit_per_user = await self.get_current_user_named_server_limit()
+
+        try:
+            body = json.loads(self.request.body)
+        except json.JSONDecodeError:
+            body = {}
+        user_options = body.get("user_options", {})
+        notebook_dirs = body.get("notebook_dirs", [])
+
+        user_options = self.merge_user_options(
+            user_options, config.default_user_options
+        )
+        if "option" not in user_options:
+            raise web.HTTPError(400, reason="Missing 'option' in user_options")
+        user_options["profile"] = user_options["option"]
 
         if named_server_limit_per_user > 0:
             named_spawners = list(user.all_spawners(include_default=False))
+            for named_spawner_orm in named_spawners:
+                named_spawner = user.get_spawner(named_spawner_orm.name)
+
+                state_is_none = named_spawner.orm_spawner.state is None
+                is_job = getattr(named_spawner, "_is_job", False)
+                is_active = named_spawner.active
+                is_preparing = (
+                    getattr(named_spawner, "_job_prepare_status", None) is not None
+                )
+                activity = is_active or is_preparing
+
+                spawner_user_options = getattr(named_spawner, "user_options", {}) or {}
+                if (
+                    user_options == spawner_user_options
+                    and is_job
+                    and activity
+                    and not state_is_none
+                ):
+                    ret = url_path_join(
+                        f"{self.request.protocol}://{self.request.host}",
+                        self.hub.base_url,
+                        "api/job",
+                        user.name,
+                        named_spawner.name,
+                    )
+                    self.write(ret)
+                    self.set_header("Location", ret)
+                    self.set_status(201)
+                    return
+                if (is_job and not activity) or state_is_none:
+                    delete_spawner = True
+                    if named_spawner.orm_spawner.started is not None:
+                        delete_timestamp = (
+                            named_spawner.orm_spawner.started
+                            + datetime.timedelta(seconds=config.job_timeout + 60)
+                        )
+                        if delete_timestamp > datetime.datetime.now(
+                            datetime.timezone.utc
+                        ).replace(tzinfo=None):
+                            delete_spawner = False
+                    if delete_spawner:
+                        self.log.info(
+                            f"{named_spawner._log_name} - Delete previously created job to allow new jobs to run",
+                            extra={"action": "job_delete"},
+                        )
+                        await user._delete_spawner(named_spawner)
+                        if named_spawner.orm_spawner is not None:
+                            self.db.delete(named_spawner.orm_spawner)
+                        user.spawners.pop(named_spawner.name, None)
+                        self.db.commit()
+
+            named_spawners = list(user.all_spawners(include_default=False))
+            x = len(named_spawners)
             if named_server_limit_per_user <= len(named_spawners):
                 raise web.HTTPError(
                     400,
@@ -217,7 +287,6 @@ class JobAPIHandler(APIHandler):
                     "  One must be deleted before a new server can be created",
                 )
 
-        config = JobAPIHandlerConfig(config=self.config)
         running_jobs = 0
         for spawner in user.all_spawners():
             if getattr(spawner, "_is_job", False):
@@ -233,19 +302,6 @@ class JobAPIHandler(APIHandler):
                 f"User {user.name} already has the maximum of {config.job_server_limit_per_user} running jobs."
                 " One must be completed before a new job can be started",
             )
-        try:
-            body = json.loads(self.request.body)
-        except json.JSONDecodeError:
-            body = {}
-        user_options = body.get("user_options", {})
-        notebook_dirs = body.get("notebook_dirs", [])
-
-        user_options = self.merge_user_options(
-            user_options, config.default_user_options
-        )
-        if "option" not in user_options:
-            raise web.HTTPError(400, reason="Missing 'option' in user_options")
-        user_options["profile"] = user_options["option"]
 
         server_name = generate_random_id()
 
@@ -412,6 +468,37 @@ class JobAPIHandler(APIHandler):
             }
         )
         self.set_status(200)
+
+    @needs_scope("access:servers")
+    async def delete(self, user_name, server_name):
+        user = self.current_user
+        if not user:
+            raise web.HTTPError(403)
+
+        if server_name not in user.orm_user.orm_spawners:
+            raise web.HTTPError(404)
+
+        spawner = user.get_spawner(server_name)
+        if not spawner:
+            raise web.HTTPError(404)
+
+        async def _remove_spawner():
+            if spawner.active:
+                spawner.log.info(
+                    f"{spawner._log_name} - Job delete", extra={"action": "job_delete"}
+                )
+                spawner.stop_polling()
+                await user.stop(server_name)
+            await user._delete_spawner(spawner)
+            if spawner.orm_spawner is not None:
+                self.db.delete(spawner.orm_spawner)
+            user.spawners.pop(server_name, None)
+            self.db.commit()
+
+        task = asyncio.create_task(_remove_spawner())
+        task_references.add(task)
+        task.add_done_callback(task_references.discard)
+        self.set_status(204)
 
 
 default_handlers.append((r"/api/job", JobAPIHandler))
