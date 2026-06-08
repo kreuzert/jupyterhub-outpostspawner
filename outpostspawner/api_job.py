@@ -230,7 +230,7 @@ class JobAPIHandler(APIHandler):
             for named_spawner_orm in named_spawners:
                 named_spawner = user.get_spawner(named_spawner_orm.name)
 
-                state_is_none = named_spawner.orm_spawner.state is None
+                user_options_is_none = named_spawner.orm_spawner.user_options is None
                 is_job = getattr(named_spawner, "_is_job", False)
                 is_active = named_spawner.active
                 is_preparing = (
@@ -243,7 +243,7 @@ class JobAPIHandler(APIHandler):
                     user_options == spawner_user_options
                     and is_job
                     and activity
-                    and not state_is_none
+                    and not user_options_is_none
                 ):
                     ret = url_path_join(
                         f"{self.request.protocol}://{self.request.host}",
@@ -256,7 +256,7 @@ class JobAPIHandler(APIHandler):
                     self.set_header("Location", ret)
                     self.set_status(201)
                     return
-                if (is_job and not activity) or state_is_none:
+                if (is_job and not activity) or user_options_is_none:
                     delete_spawner = True
                     if named_spawner.orm_spawner.started is not None:
                         delete_timestamp = (
