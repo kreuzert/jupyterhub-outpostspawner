@@ -413,19 +413,6 @@ class JobAPIHandler(APIHandler):
         if not spawner:
             raise web.HTTPError(404)
 
-        async def _remove_spawner():
-            if spawner.active:
-                spawner.log.info(
-                    f"{spawner._log_name} - Job stop", extra={"action": "job_stop"}
-                )
-                spawner.stop_polling()
-                await user.stop(server_name)
-            await user._delete_spawner(spawner)
-            if spawner.orm_spawner is not None:
-                self.db.delete(spawner.orm_spawner)
-            user.spawners.pop(server_name, None)
-            self.db.commit()
-
         logs = []
         exit_code = None
         status = None
@@ -439,23 +426,13 @@ class JobAPIHandler(APIHandler):
                 if spawner.ready
                 else "spawning"
             )
-        if status == "running" or status == "stopped":
+        if status in ["running", "stopped"]:
             logs = spawner.logs
             exit_code = spawner.exit_code
         if len(logs) > 0 and logs[-1] == "Papermill Job completed":
             logs = self.reduce_logs(logs)
             status = "stopped"
             exit_code = 0
-        if status == "stopped":
-            if (
-                self.request.query_arguments.get("delete", [b"true"])[0]
-                .decode()
-                .lower()
-                == "true"
-            ):
-                task = asyncio.create_task(_remove_spawner())
-                task_references.add(task)
-                task.add_done_callback(task_references.discard)
         spawner.log.debug(
             f"{spawner._log_name} - Job poll",
             extra={"action": "job_poll", "status": status, "exit_code": exit_code},
