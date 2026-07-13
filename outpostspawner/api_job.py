@@ -2,12 +2,18 @@ import asyncio
 import datetime
 import inspect
 import json
+import time
 
 from jupyterhub.apihandlers import APIHandler
 from jupyterhub.apihandlers import default_handlers
+from jupyterhub.metrics import PROXY_ADD_DURATION_SECONDS
+from jupyterhub.metrics import RUNNING_SERVERS
+from jupyterhub.metrics import SERVER_SPAWN_DURATION_SECONDS
+from jupyterhub.metrics import ServerSpawnStatus
 from jupyterhub.scopes import needs_scope
 from jupyterhub.utils import url_path_join
 from tornado import web
+from tornado.ioloop import IOLoop
 from traitlets import Callable
 from traitlets import Dict
 from traitlets import Integer
@@ -304,6 +310,8 @@ class JobAPIHandler(APIHandler):
             )
 
         server_name = generate_random_id()
+        user_server_name = f"{user.name}:{server_name}"
+        spawn_start_time = time.perf_counter()
 
         spawner = user.get_spawner(server_name, replace_failed=True)
         script = config.get_script(notebook_dirs=notebook_dirs)
@@ -339,7 +347,53 @@ class JobAPIHandler(APIHandler):
 
             async def _spawn():
                 try:
+                    # Do not use self.spawn_single_user() directly,
+                    # as it will force refresh_auth and may cause auth expiry errors
+                    tic = IOLoop.current().time()
+                    self.log.debug("Initiating spawn for %s", user_server_name)
                     await user.spawn(server_name)
+                    toc = IOLoop.current().time()
+                    self.log.info(
+                        "User %s took %.3f seconds to start",
+                        user_server_name,
+                        toc - tic,
+                    )
+                    self.statsd.timing("spawner.success", (toc - tic) * 1000)
+                    SERVER_SPAWN_DURATION_SECONDS.labels(
+                        status=ServerSpawnStatus.success
+                    ).observe(time.perf_counter() - spawn_start_time)
+                    self.eventlog.emit(
+                        schema_id="https://schema.jupyter.org/jupyterhub/events/server-action",
+                        data={
+                            "action": "start",
+                            "username": user.name,
+                            "servername": server_name,
+                        },
+                    )
+                    proxy_add_start_time = time.perf_counter()
+                    spawner._proxy_pending = True
+                    try:
+                        await self.proxy.add_user(user, server_name)
+
+                        PROXY_ADD_DURATION_SECONDS.labels(status="success").observe(
+                            time.perf_counter() - proxy_add_start_time
+                        )
+                        RUNNING_SERVERS.inc()
+                    except Exception:
+                        self.log.exception(
+                            "Failed to add %s to proxy!", user_server_name
+                        )
+                        self.log.error(
+                            "Stopping %s to avoid inconsistent state", user_server_name
+                        )
+                        await user.stop(server_name)
+                        PROXY_ADD_DURATION_SECONDS.labels(status="failure").observe(
+                            time.perf_counter() - proxy_add_start_time
+                        )
+                    else:
+                        spawner.add_poll_callback(self.user_stopped, user, server_name)
+                    finally:
+                        spawner._proxy_pending = False
                 except Exception as e:
                     self.log.error(f"{spawner._log_name} - Error spawning job: {e}")
                     spawner.logs = [f"Error spawning job: {e}"]
