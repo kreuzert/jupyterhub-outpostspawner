@@ -358,7 +358,6 @@ class JobAPIHandler(APIHandler):
                         user_server_name,
                         toc - tic,
                     )
-                    self.statsd.timing("spawner.success", (toc - tic) * 1000)
                     SERVER_SPAWN_DURATION_SECONDS.labels(
                         status=ServerSpawnStatus.success
                     ).observe(time.perf_counter() - spawn_start_time)
