@@ -234,7 +234,9 @@ class JobAPIHandler(APIHandler):
         if named_server_limit_per_user > 0:
             named_spawners = list(user.all_spawners(include_default=False))
             for named_spawner_orm in named_spawners:
-                named_spawner = user.get_spawner(named_spawner_orm.name)
+                named_spawner = user.get_or_create_spawner(
+                    named_spawner_orm.name, named_spawner_orm.name
+                )
 
                 user_options_is_none = named_spawner.orm_spawner.user_options is None
                 is_job = getattr(named_spawner, "_is_job", False)
@@ -313,7 +315,9 @@ class JobAPIHandler(APIHandler):
         user_server_name = f"{user.name}:{server_name}"
         spawn_start_time = time.perf_counter()
 
-        spawner = user.get_spawner(server_name, replace_failed=True)
+        spawner = user.get_or_create_spawner(
+            server_name, server_name, replace_failed=True
+        )
         script = config.get_script(notebook_dirs=notebook_dirs)
 
         job_custom_misc = {"cmd": ["/bin/bash", "-lc"], "args": script}
@@ -462,7 +466,7 @@ class JobAPIHandler(APIHandler):
         if server_name not in user.orm_user.orm_spawners:
             raise web.HTTPError(404)
 
-        spawner = user.get_spawner(server_name)
+        spawner = user.get_or_create_spawner(server_name, server_name)
         if not spawner:
             raise web.HTTPError(404)
 
@@ -508,7 +512,7 @@ class JobAPIHandler(APIHandler):
         if server_name not in user.orm_user.orm_spawners:
             raise web.HTTPError(404)
 
-        spawner = user.get_spawner(server_name)
+        spawner = user.get_or_create_spawner(server_name, server_name)
         if not spawner:
             raise web.HTTPError(404)
 
