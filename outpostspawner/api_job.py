@@ -9,6 +9,7 @@ from jupyterhub.apihandlers import default_handlers
 from jupyterhub.metrics import PROXY_ADD_DURATION_SECONDS
 from jupyterhub.metrics import RUNNING_SERVERS
 from jupyterhub.metrics import SERVER_SPAWN_DURATION_SECONDS
+from jupyterhub.metrics import ServerSpawnFailureReason
 from jupyterhub.metrics import ServerSpawnStatus
 from jupyterhub.scopes import needs_scope
 from jupyterhub.utils import url_path_join
@@ -363,7 +364,8 @@ class JobAPIHandler(APIHandler):
                         toc - tic,
                     )
                     SERVER_SPAWN_DURATION_SECONDS.labels(
-                        status=ServerSpawnStatus.success
+                        status=ServerSpawnStatus.success,
+                        reason=ServerSpawnFailureReason.none,
                     ).observe(time.perf_counter() - spawn_start_time)
                     self.eventlog.emit(
                         schema_id="https://schema.jupyter.org/jupyterhub/events/server-action",
