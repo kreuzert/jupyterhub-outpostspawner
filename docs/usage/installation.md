@@ -2,7 +2,7 @@
 
 This section covers an example configuration to use [Zero2JupyterHub](https://z2jh.jupyter.org) with the OutpostSpawner.
 In this scenario, we will connect the JupyterHub OutpostSpawner with two running JupyterHub Outpost services.
-You can find a tutorial how to install a JupyterHub Outpost service [here](https://jupyterhub-outpost.readthedocs.io/en/latest/usage/installation.html).
+You can find a tutorial how to install a JupyterHub Outpost service [here](https://kreuzert.github.io/jupyterhub-outpost/usage/installation.html).
 
 !!! warning
     In this example, the communication between JupyterHub and the `second` system (a remote Kubernetes cluster hosting the JupyterHub Outpost service) is not encrypted. Do not use this setup in production.
@@ -188,4 +188,4 @@ helm upgrade --cleanup-on-fail --install --namespace jupyter -f z2jh_values.yaml
 ```
 
 After a few minutes everything should be up and running. If you have any problems following this example, or want to leave feedback, feel free to open an issue on GitLab.
-If you have not already done, you should now install the connected JupyterHub Outpost services. Have a look at its documentation [here](https://jupyterhub-outpost.readthedocs.io/en/latest/usage/installation.html).
+If you have not already done, you should now install the connected JupyterHub Outpost services. Have a look at its documentation [here](https://kreuzert.github.io/jupyterhub-outpost/usage/installation.html).
