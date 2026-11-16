@@ -25,6 +25,6 @@ The JupyterHub Outpost must fulfill the requirements of the configured Spawner c
 
 ## License
 
-```text
-@@include(../LICENSE)
+```
+--8<-- "LICENSE"
 ```

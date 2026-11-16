@@ -85,6 +85,7 @@ pymdownx.highlight.pygments_lang_class = true
 pymdownx.inlinehilite = {}
 pymdownx.keys = {}
 pymdownx.magiclink = {}
+pymdownx.snippets.base_path = ["docs", "."]
 pymdownx.mark = {}
 pymdownx.smartsymbols = {}
 pymdownx.superfences.custom_fences = [
