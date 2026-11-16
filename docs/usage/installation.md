@@ -1,17 +1,16 @@
 # Usage
 
-This section covers an example configuration to use [Zero2JupyterHub](https://z2jh.jupyter.org) with the OutpostSpawner.  
-In this scenario, we will connect the JupyterHub OutpostSpawner with two running JupyterHub Outpost services.  
+This section covers an example configuration to use [Zero2JupyterHub](https://z2jh.jupyter.org) with the OutpostSpawner.
+In this scenario, we will connect the JupyterHub OutpostSpawner with two running JupyterHub Outpost services.
 You can find a tutorial how to install a JupyterHub Outpost service [here](https://jupyterhub-outpost.readthedocs.io/en/latest/usage/installation.html).
 
-```{admonition} Warning
-In this example, the communication between JupyterHub and the `second` system (a remote Kubernetes cluster hosting the JupyterHub Outpost service) is not encrypted. Do not use this setup in production.
-You can use an Ingress controller such as [ingress-nginx](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx) on the JupyterHub Outpost cluster to enable encryption. 
-```
+!!! warning
+    In this example, the communication between JupyterHub and the `second` system (a remote Kubernetes cluster hosting the JupyterHub Outpost service) is not encrypted. Do not use this setup in production.
+    You can use an Ingress controller such as [ingress-nginx](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx) on the JupyterHub Outpost cluster to enable encryption.
 
 ## Requirements
 
-One Kubernetes cluster up and running.  
+One Kubernetes cluster up and running.
 In this example we will use [ingress-nginx](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx) as the Ingress controller.
 
 ## Preparations
@@ -36,14 +35,13 @@ kubectl --namespace jupyter create secret generic --from-literal=AUTH_OUTPOST_FI
 
 ## Configuration
 
-With these secrets created, we can now start JupyterHub. In this scenario, we're using ingress-nginx and disabling a few things that are not required for a minimal example setup. Your JupyterHub configuration might look a bit different. 
+With these secrets created, we can now start JupyterHub. In this scenario, we're using ingress-nginx and disabling a few things that are not required for a minimal example setup. Your JupyterHub configuration might look a bit different.
 
-```{admonition} Warning
-We're connecting this JupyterHub with two JupyterHub Outposts. One is running on the same cluster as JupyterHub, the second one is running remotely on a different cluster.  
-Therefore, we're using an internal cluster address for the first Outpost. Furthermore, there is no need to enable ssh port-forwarding for the first cluster, as the JupyterLabs will be directly reachable for JupyterHub thanks to Kubernetes' internal DNS name resolution.  
-  
-All JupyterLabs will be using the external DNS alias name of the JupyterHub to reach the hub api url (see `c.OutpostSpawner.public_api_url`). You might have to install a hairpin-proxy (e.g. [this](https://github.com/compumike/hairpin-proxy)) to allow pods within your cluster to communicate with the public DNS alias name.
-```
+!!! warning
+    We're connecting this JupyterHub with two JupyterHub Outposts. One is running on the same cluster as JupyterHub, the second one is running remotely on a different cluster.
+    Therefore, we're using an internal cluster address for the first Outpost. Furthermore, there is no need to enable ssh port-forwarding for the first cluster, as the JupyterLabs will be directly reachable for JupyterHub thanks to Kubernetes' internal DNS name resolution.
+
+    All JupyterLabs will be using the external DNS alias name of the JupyterHub to reach the hub api url (see `c.OutpostSpawner.public_api_url`). You might have to install a hairpin-proxy (e.g. [this](https://github.com/compumike/hairpin-proxy)) to allow pods within your cluster to communicate with the public DNS alias name.
 
 ```yaml
 cat <<EOF >> z2jh_values.yaml
@@ -140,7 +138,7 @@ hub:
           raise Exception("Not supported")
       c.OutpostSpawner.ssh_enabled = ssh_enabled
 
-      # Check https://jupyterhub-outpostspawner.readthedocs.io/en/latest/spawners/outpostspawner.html
+      # Check https://kreuzert.github.io/jupyterhub-outpostspawner/spawners/outpostspawner/
       # for an in-depth explanation of each option
       c.OutpostSpawner.ssh_key = "/mnt/ssh_keys/ssh-privatekey"
       c.OutpostSpawner.http_timeout = 1200
@@ -189,5 +187,5 @@ helm repo update
 helm upgrade --cleanup-on-fail --install --namespace jupyter -f z2jh_values.yaml jupyterhub jupyterhub/jupyterhub
 ```
 
-After a few minutes everything should be up and running. If you have any problems following this example, or want to leave feedback, feel free to open an issue on GitHub. 
+After a few minutes everything should be up and running. If you have any problems following this example, or want to leave feedback, feel free to open an issue on GitLab.
 If you have not already done, you should now install the connected JupyterHub Outpost services. Have a look at its documentation [here](https://jupyterhub-outpost.readthedocs.io/en/latest/usage/installation.html).

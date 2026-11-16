@@ -1,5 +1,5 @@
 
-[![Documentation Status](https://readthedocs.org/projects/jupyterhub-outpostspawner/badge/?version=latest)](https://jupyterhub-outpostspawner.readthedocs.io/en/latest/?badge=latest)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://kreuzert.github.io/jupyterhub-outpostspawner/)
 
 # OutpostSpawner
 
@@ -7,7 +7,7 @@ The OutpostSpawner in combination with the [JupyterHub Outpost service](https://
 
 ## Documentation
 
-Link to [documentation](https://jupyterhub-outpostspawner.readthedocs.io).
+Link to [documentation](https://kreuzert.github.io/jupyterhub-outpostspawner/).
 
 ## Overview  
   

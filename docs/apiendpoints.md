@@ -13,7 +13,7 @@ Below is an interactive view of the OutpostSpawner REST API specification.
 
 <script>
 const ui = SwaggerUIBundle({
-  url: './_static/rest-api.yml',
+  url: '../_static/rest-api.yml',
   dom_id: '#openapi-ui',
   presets: [
     SwaggerUIBundle.presets.apis,
